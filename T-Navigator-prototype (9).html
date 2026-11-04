@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Т-Навигатор — прототип</title>
+<style>
+  :root{
+    --yellow:#FFDD2D; --yellow-soft:#FFF4BF; --black:#333333; --ink:#1A1A1A;
+    --muted:#9299A2; --text2:#6B717A; --bg:#F6F7F8; --card:#FFFFFF; --line:#E6E8EB;
+    --gray-node:#DDE0E4; --green:#00B92D;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"TBank Sans","Tinkoff Sans",Inter,system-ui,sans-serif;background:#D9DCE0;color:var(--black);-webkit-font-smoothing:antialiased}
+  .screen{width:1440px;min-height:900px;background:var(--bg);margin:0 auto 40px;padding:0 0 48px}
+  /* header */
+  .top{height:72px;background:#fff;display:flex;align-items:center;padding:0 48px;gap:40px;border-bottom:1px solid var(--line)}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px;color:var(--ink)}
+  .logo i{width:36px;height:36px;border-radius:10px;background:var(--yellow);display:grid;place-items:center;font-style:normal;font-weight:800;font-size:18px}
+  .nav{display:flex;gap:28px;font-size:15px;color:var(--text2)}
+  .nav span{position:relative}.nav .on{color:var(--ink);font-weight:600}
+  .nav .on:after{content:"";position:absolute;left:0;right:0;bottom:-25px;height:3px;border-radius:2px;background:var(--yellow)}
+  .top .right{margin-left:auto;display:flex;align-items:center;gap:16px}
+  .xp{background:var(--bg);border-radius:12px;padding:8px 14px;font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center}
+  .xp span{color:var(--text2);font-weight:500}
+  .ava{width:40px;height:40px;border-radius:50%;background:var(--black);color:#fff;display:grid;place-items:center;font-weight:600}
+  .wrap{padding:36px 48px 0}
+  h1{font-size:40px;line-height:44px;font-weight:700;letter-spacing:-.5px;color:var(--ink)}
+  .sub{margin-top:8px;font-size:17px;color:var(--text2)}
+  h2{font-size:24px;font-weight:700;color:var(--ink);letter-spacing:-.2px}
+  h3{font-size:20px;font-weight:700;color:var(--ink)}
+  .card{background:var(--card);border-radius:24px;padding:28px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:12px;font:600 15px/1 inherit;font-family:inherit;border:0;cursor:pointer}
+  .btn.y{background:var(--yellow);color:var(--ink)}
+  .btn.g{background:var(--bg);color:var(--ink)}
+  .tag{display:inline-block;font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;background:var(--bg);color:var(--text2)}
+  .tag.y{background:var(--yellow-soft);color:#7A6200}
+
+  /* screen 1 */
+  .grid1{display:grid;grid-template-columns:1fr 440px;gap:24px;margin-top:32px}
+  .courses{display:flex;flex-direction:column;gap:16px;margin-top:20px}
+  .course{display:grid;grid-template-columns:56px 200px 1fr 64px 140px;align-items:center;gap:20px;padding:24px 28px}
+  .ico{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;font-weight:800;font-size:17px;color:var(--ink)}
+  .cname{font-size:19px;font-weight:700;color:var(--ink)}
+  .cmeta{font-size:14px;color:var(--text2);margin-top:4px}
+  .track{position:relative;height:40px}
+  .track .ln{position:absolute;left:10px;right:10px;top:26px;height:6px;border-radius:3px;background:var(--line)}
+  .track .fill{position:absolute;left:10px;top:26px;height:6px;border-radius:3px;background:var(--yellow)}
+  .track .pt{position:absolute;top:22px;width:14px;height:14px;border-radius:50%;background:#fff;border:3px solid var(--line)}
+  .track .pt.a{left:4px;border-color:var(--yellow);background:var(--yellow)}
+  .track .pt.b{right:4px}
+  .track .lbl{position:absolute;top:0;font-size:12px;font-weight:700;color:var(--muted)}
+  .track .me{position:absolute;top:18px;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:var(--ink);border:4px solid #fff;box-shadow:0 0 0 2px var(--ink)}
+  .pct{font-size:20px;font-weight:700;text-align:right;color:var(--ink)}
+  .more{margin-top:4px;text-align:center;color:var(--text2);font-size:15px;padding:14px;border:2px dashed var(--line);border-radius:20px}
+  .cal-head{display:flex;justify-content:space-between;align-items:center}
+  .cal-head .arr{display:flex;gap:8px}
+  .cal-head .arr span{width:32px;height:32px;border-radius:10px;background:var(--bg);display:grid;place-items:center;font-size:14px;color:var(--text2)}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:18px;text-align:center}
+  .cal .dw{font-size:12px;color:var(--muted);font-weight:600;padding-bottom:6px}
+  .cal .d{height:42px;border-radius:12px;display:grid;place-items:center;font-size:15px;font-weight:500;position:relative}
+  .cal .d.today{background:var(--yellow);font-weight:700}
+  .cal .d.ev:after{content:"";position:absolute;bottom:5px;width:5px;height:5px;border-radius:50%;background:var(--ink)}
+  .cal .d.we{color:var(--muted)}
+  .evs{margin-top:18px;border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:14px}
+  .ev{display:flex;gap:14px;align-items:center}
+  .date{width:52px;height:52px;border-radius:14px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;flex:none}
+  .date b{font-size:18px;line-height:20px;color:var(--ink)}
+  .date small{font-size:11px;color:var(--text2);text-transform:uppercase;font-weight:600}
+  .ev .t{font-size:15px;font-weight:600;color:var(--ink);line-height:20px}
+  .ev .m{font-size:13px;color:var(--text2);margin-top:2px}
+  .motiv{background:var(--ink);color:#fff;margin-top:24px;position:relative;overflow:hidden}
+  .motiv .q{font-size:72px;line-height:48px;color:var(--yellow);font-weight:800}
+  .motiv p{font-size:22px;line-height:30px;font-weight:600;margin-top:8px;max-width:340px}
+  .motiv small{display:block;margin-top:16px;color:#A8ADB4;font-size:14px}
+  .motiv .lbl{font-size:13px;font-weight:600;color:var(--yellow);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px}
+
+  /* screen 2 */
+  .grid2{display:grid;grid-template-columns:1fr 460px;gap:24px;margin-top:28px}
+  .path{padding:28px 28px 20px;min-height:720px;position:relative}
+  .legend{display:flex;gap:18px;font-size:13px;color:var(--text2);margin-top:10px}
+  .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+  .side{display:flex;flex-direction:column;gap:24px}
+  .prog .track{height:64px;margin-top:18px}
+  .prog .track .ln,.prog .track .fill{top:40px;height:8px}
+  .prog .track .pt{top:37px}
+  .prog .track .lbl{top:14px;font-size:14px}
+  .prog .you{position:absolute;top:0;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px}
+  .prog .you:after{content:"";position:absolute;left:50%;bottom:-5px;margin-left:-5px;border:5px solid transparent;border-bottom:0;border-top-color:var(--ink)}
+  .prog .meDot{position:absolute;top:33px;width:22px;height:22px;margin-left:-11px;border-radius:50%;background:var(--yellow);border:4px solid var(--ink)}
+  .bigpct{display:flex;align-items:baseline;gap:10px;margin-top:6px}
+  .bigpct b{font-size:40px;color:var(--ink)}
+  .bigpct span{color:var(--text2);font-size:15px}
+
+  /* screen 3 */
+  .crumbs{font-size:14px;color:var(--text2)}
+  .crumbs b{color:var(--ink);font-weight:500}
+  .grid3{display:grid;grid-template-columns:1fr 420px;gap:24px;margin-top:28px;align-items:start}
+  .video{border-radius:24px;aspect-ratio:16/9;background:radial-gradient(120% 120% at 20% 10%,#4A4F57 0%,#23262B 60%,#17191C 100%);position:relative;overflow:hidden}
+  .video .play{position:absolute;left:50%;top:50%;width:88px;height:88px;margin:-44px 0 0 -44px;border-radius:50%;background:var(--yellow);display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .video .bar{position:absolute;left:24px;right:24px;bottom:22px;display:flex;align-items:center;gap:14px;color:#fff;font-size:13px;font-weight:600}
+  .video .bar .ln{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.25);position:relative}
+  .video .bar .ln:before{content:"";position:absolute;left:0;top:0;bottom:0;width:0%;background:var(--yellow);border-radius:2px}
+  .video .badge{position:absolute;left:24px;top:22px;background:rgba(255,255,255,.12);color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:10px}
+  .navrow{display:flex;justify-content:space-between;margin-top:16px}
+  .defs{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+  .def{background:var(--bg);border-radius:18px;padding:18px}
+  .def b{font-size:16px;color:var(--ink)}
+  .def p{font-size:14px;line-height:20px;color:var(--text2);margin-top:6px}
+  .res{display:flex;flex-direction:column;margin-top:8px}
+  .r{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .r:last-child{border-bottom:0}
+  .r .n{width:44px;height:44px;border-radius:12px;background:var(--bg);display:grid;place-items:center;font-weight:700;color:var(--ink)}
+  .r .n.y{background:var(--yellow)}
+  .r .t{font-size:16px;font-weight:600;color:var(--ink)}
+  .r .m{font-size:13px;color:var(--text2);margin-top:2px}
+  .r .go{margin-left:auto;color:var(--muted);font-size:20px}
+  .desc p{font-size:17px;line-height:26px;color:var(--black);margin-top:14px}
+  .checks{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+  .checks div{display:flex;gap:10px;font-size:15px;line-height:21px;color:var(--black)}
+  .checks i{flex:none;width:20px;height:20px;border-radius:6px;background:var(--yellow-soft);display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;color:#7A6200;margin-top:1px}
+  .reward{margin-top:22px;display:flex;align-items:center;gap:14px;background:var(--yellow);border-radius:18px;padding:16px 18px}
+  .reward b{white-space:nowrap;font-size:22px;color:var(--ink)}
+  .reward span{font-size:14px;color:#4A3F00;line-height:19px}
+
+  body{background:var(--bg)}
+  .screen{display:none;margin:0 auto}
+  .screen.active{display:block}
+  .nav span,.nav b,.logo,.crumbs a,.course,.r,.def,.cal .d,.more,.ev,.cal-head .arr span{cursor:pointer}
+  .crumbs a{color:var(--text2);text-decoration:none}.crumbs a:hover{color:var(--ink)}
+  .btn{transition:filter .15s,transform .1s}.btn:hover{filter:brightness(.96)}.btn:active{transform:scale(.98)}
+  .btn[disabled]{opacity:.4;cursor:default}
+  .course{transition:box-shadow .2s,transform .2s}.course:hover{box-shadow:0 8px 24px rgba(0,0,0,.06);transform:translateY(-1px)}
+  .r:hover .go{color:var(--ink)}
+  .cal .d:hover:not(.today){background:var(--bg)}
+  .cal .d.sel{outline:2px solid var(--ink)}
+  .node{cursor:pointer}.node:hover{filter:brightness(.97)}
+  .extra{display:none}.extra.show{display:grid}
+  #toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:14px 20px;border-radius:14px;font-size:15px;font-weight:500;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+  .video .bar .ln:before{width:var(--p,0%)}
+  .video.playing .play{opacity:0;transition:.2s}
+  .video{cursor:pointer}
+  .reward.done{background:var(--ink)}.reward.done b{color:var(--yellow)}.reward.done span{color:#ddd}
+
+  /* atlas banner */
+  .atlas-banner{display:flex;align-items:center;gap:28px;background:var(--yellow);border-radius:24px;padding:24px 28px;margin-top:28px;cursor:pointer;position:relative;overflow:hidden}
+  .atlas-banner .ab-ico{width:64px;height:64px;border-radius:18px;background:var(--ink);display:grid;place-items:center;flex:none}
+  .atlas-banner h3{font-size:22px}
+  .atlas-banner p{font-size:15px;color:#4A3F00;margin-top:4px}
+  .atlas-banner > div:not(.deco){position:relative}.atlas-banner .btn{position:relative;margin-left:auto;background:var(--ink);color:#fff;flex:none}
+  .atlas-banner .deco{position:absolute;right:-40px;top:-60px;width:160px;height:160px;border-radius:50%;border:28px solid rgba(255,255,255,.35)}
+  /* catalog */
+  .toolbar{display:flex;gap:12px;align-items:center;margin-top:28px;flex-wrap:wrap}
+  .search{flex:0 0 360px;height:48px;border-radius:14px;background:#fff;border:0;padding:0 18px;font:16px inherit;font-family:inherit;color:var(--ink);outline:none}
+  .search:focus{box-shadow:0 0 0 2px var(--yellow)}
+  .chip{height:40px;padding:0 16px;border-radius:12px;background:#fff;display:inline-flex;align-items:center;font-size:15px;font-weight:500;cursor:pointer;color:var(--ink)}
+  .chip.on{background:var(--ink);color:#fff}
+  .cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px}
+  .ccard{display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:box-shadow .2s,transform .2s}
+  .ccard:hover{box-shadow:0 8px 24px rgba(0,0,0,.06);transform:translateY(-2px)}
+  .ccard .row{display:flex;justify-content:space-between;align-items:center}
+  .ccard .cname{font-size:20px}
+  .ccard .cdesc{font-size:15px;line-height:21px;color:var(--text2);min-height:42px}
+  .ccard .meta{display:flex;gap:8px;flex-wrap:wrap}
+  .ccard .btn{margin-top:auto;width:100%}
+  .empty{display:none;padding:48px;text-align:center;color:var(--text2);font-size:17px}
+  /* atlas */
+  .agrid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:24px;align-items:start}
+  .prof{display:grid;grid-template-columns:1fr 120px;gap:16px;cursor:pointer;transition:box-shadow .2s}
+  .prof:hover{box-shadow:0 8px 24px rgba(0,0,0,.06)}
+  .prof .cdesc{font-size:15px;line-height:21px;color:var(--text2);margin-top:6px}
+  .prof .skills{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .match{display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+  .match b{font-size:13px;color:var(--text2);font-weight:500;margin-top:6px}
+  .prof .more-info{grid-column:1/-1;display:none;border-top:1px solid var(--line);padding-top:16px;font-size:15px;line-height:22px}
+  .prof.open .more-info{display:block}
+  .prof .more-info .acts{display:flex;gap:10px;margin-top:14px}
+  .legendbar{display:flex;gap:10px;align-items:center;margin-top:12px;font-size:14px;color:var(--text2)}
+
+  .elist{display:flex;flex-direction:column;gap:16px;margin-top:24px}
+  .eitem{display:grid;grid-template-columns:84px 1fr 200px;gap:24px;align-items:center;transition:box-shadow .3s}
+  .eitem.flash{box-shadow:0 0 0 3px var(--yellow)}
+  .eitem .date{width:84px;height:84px;border-radius:20px}
+  .eitem .date b{font-size:28px;line-height:30px}
+  .eitem .t{font-size:19px;font-weight:700;color:var(--ink)}
+  .eitem .m{font-size:15px;color:var(--text2);margin-top:6px;line-height:21px}
+  .eitem .tags{display:flex;gap:8px;margin-top:10px}
+  .eitem .btn{width:100%}
+  .btn.ok{background:var(--ink);color:#fff}
+  .ilist{display:flex;flex-direction:column;gap:16px;margin-top:24px}
+  .intern{display:grid;grid-template-columns:1fr 300px 210px;gap:28px;align-items:center}
+  .intern .t{font-size:20px;font-weight:700;color:var(--ink)}
+  .intern .m{font-size:15px;color:var(--text2);margin-top:6px}
+  .intern .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .ready .row{display:flex;justify-content:space-between;font-size:14px;color:var(--text2)}
+  .ready .row b{color:var(--ink);font-size:16px}
+  .ready .bar{height:8px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden}
+  .ready .bar i{display:block;height:100%;background:var(--yellow);border-radius:4px}
+  .ready .gap{font-size:13px;color:var(--text2);margin-top:8px;line-height:18px}
+  .acts2{display:flex;flex-direction:column;gap:8px}
+  .acts2 .btn{width:100%}
+  .subbox{display:flex;align-items:center;gap:20px;margin-top:24px}
+  .subbox .t{font-size:17px;font-weight:600;color:var(--ink)}
+  .subbox .m{font-size:14px;color:var(--text2);margin-top:2px}
+  .tgl{width:52px;height:30px;border-radius:15px;background:#C9CDD2;position:relative;cursor:pointer;flex:none;transition:.2s}
+  .tgl:after{content:"";position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .tgl.on{background:var(--ink)}.tgl.on:after{left:25px;background:var(--yellow)}
+  .pgrid{display:grid;grid-template-columns:420px 1fr;gap:24px;margin-top:28px;align-items:start}
+  .pcard{display:flex;flex-direction:column;align-items:center;text-align:center}
+  .pcard .bigava{width:112px;height:112px;border-radius:50%;background:var(--ink);color:var(--yellow);display:grid;place-items:center;font-size:44px;font-weight:700}
+  .pcard .nm{font-size:26px;font-weight:700;margin-top:16px;color:var(--ink)}
+  .pcard .uni{font-size:15px;color:var(--text2);margin-top:6px;line-height:21px}
+  .lvl{width:100%;margin-top:24px;background:var(--bg);border-radius:20px;padding:20px;text-align:left}
+  .lvl .row{display:flex;justify-content:space-between;align-items:baseline}
+  .lvl .row b{font-size:20px;color:var(--ink)}
+  .lvl .row span{font-size:14px;color:var(--text2)}
+  .lvl .bar{height:10px;border-radius:5px;background:#fff;margin-top:12px;overflow:hidden}
+  .lvl .bar i{display:block;height:100%;width:65%;background:var(--yellow)}
+  .lvl .steps{display:flex;justify-content:space-between;margin-top:14px;font-size:12px;color:var(--muted);font-weight:600}
+  .lvl .steps .on{color:var(--ink)}
+  .achs{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:18px}
+  .ach{background:var(--bg);border-radius:18px;padding:16px 10px;text-align:center;cursor:pointer}
+  .ach .ai{width:52px;height:52px;border-radius:50%;margin:0 auto;display:grid;place-items:center;background:var(--yellow);font-size:22px}
+  .ach.lock{opacity:.45}.ach.lock .ai{background:#DDE0E4}
+  .ach b{display:block;font-size:13px;margin-top:10px;color:var(--ink);line-height:17px}
+  .ach small{display:block;font-size:12px;color:var(--text2);margin-top:4px}
+  .setrow{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid var(--line)}
+  .setrow:last-child{border-bottom:0}
+  .setrow .t{font-size:16px;font-weight:600;color:var(--ink)}
+  .setrow .m{font-size:13px;color:var(--text2);margin-top:2px}
+  .setrow .tgl,.setrow select{margin-left:auto}
+  select{height:40px;border-radius:12px;border:0;background:var(--bg);padding:0 12px;font:15px inherit;font-family:inherit;color:var(--ink)}
+
+  .lsteps-head{display:flex;justify-content:space-between;align-items:center}
+  .pills{display:flex;gap:8px}
+  .pill{width:40px;height:40px;border-radius:12px;background:var(--bg);display:grid;place-items:center;font-weight:700;cursor:pointer;color:var(--text2)}
+  .pill.on{background:var(--ink);color:#fff}.pill.seen{background:var(--yellow);color:var(--ink)}
+  .lstep-body{margin-top:24px;min-height:220px}
+  .lstep-no{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+  .lstep-title{font-size:26px;font-weight:700;color:var(--ink);margin-top:8px;letter-spacing:-.2px}
+  .lstep-text{font-size:17px;line-height:27px;color:var(--black);margin-top:14px;max-width:760px}
+  .lstep-text p+p{margin-top:12px}
+  .lstep-nav{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:20px;margin-top:24px}
+  .quiz .q{margin-top:22px}
+  .quiz .q b{display:block;font-size:17px;color:var(--ink);margin-bottom:10px}
+  .opt{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:var(--bg);margin-top:8px;cursor:pointer;font-size:15px;border:2px solid transparent}
+  .opt i{width:20px;height:20px;border-radius:50%;border:2px solid #C9CDD2;flex:none;background:#fff}
+  .opt.sel{border-color:var(--ink)}.opt.sel i{border:6px solid var(--ink)}
+  .opt.right{border-color:var(--green);background:#EAF7EE}.opt.wrong{border-color:#F52222;background:#FDECEC}
+  .qnav{display:flex;gap:12px;align-items:center;margin-top:24px}
+  .qnav span{font-size:15px;font-weight:600;color:var(--ink)}
+  .quiz.skipped #qBody,.quiz.skipped #qCheck{display:none}
+  .note{margin-top:18px;font-size:14px;color:#7A6200;background:var(--yellow-soft);border-radius:12px;padding:12px 14px;line-height:19px}
+  .fres-big{font-size:44px;font-weight:700;color:var(--ink)}
+  .fres-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
+  .fres-row:last-child{border-bottom:0}
+  .ppr{margin-top:14px}.ppr .row{display:flex;justify-content:space-between;font-size:14px}.ppr .row span{color:var(--text2)}
+  .ppr .bar{height:8px;border-radius:4px;background:#fff;margin-top:6px;overflow:hidden}.ppr .bar i{display:block;height:100%;background:var(--yellow)}
+
+  .hero{display:grid;grid-template-columns:1fr 340px;gap:32px;background:var(--yellow);border-radius:32px;padding:48px;margin-top:8px;align-items:center}
+  .hero-h{font-size:56px;line-height:60px;margin-top:18px;letter-spacing:-1px}
+  .hero-p{font-size:20px;line-height:28px;margin-top:16px;color:#3A3200;max-width:620px}
+  .hero-ok{display:flex;gap:20px;margin-top:22px;font-size:15px;font-weight:600;flex-wrap:wrap}
+  .hero-stat{background:var(--ink);color:#fff;border-radius:24px;padding:28px}
+  .hero-stat b{display:block;font-size:56px;color:var(--yellow);line-height:60px}
+  .hero-stat span{display:block;font-size:16px;line-height:23px;margin-top:8px;color:#D5D8DC}
+  .tformats{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:18px}
+  .tfmt{display:flex;flex-direction:column;gap:12px;cursor:pointer;transition:box-shadow .2s,transform .2s;align-items:flex-start}
+  .tfmt:hover{box-shadow:0 8px 24px rgba(0,0,0,.06);transform:translateY(-2px)}
+  .tfmt.main{box-shadow:0 0 0 2px var(--yellow)}
+  .tfmt h3{font-size:24px}.tfmt p{font-size:16px;line-height:23px;color:var(--text2)}
+  .tmeta{display:flex;gap:8px}.tfmt .btn{margin-top:8px;width:100%}
+  .tknow{margin-top:24px;font-size:16px;color:var(--text2)}
+  .tknow a,.tres-foot a,.tprog a{color:var(--ink);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .tnarrow{max-width:820px;margin:0 auto}
+  .tprog .row{display:flex;justify-content:space-between;font-size:15px;color:var(--text2)}
+  .tprog .bar{height:8px;border-radius:4px;background:var(--line);margin-top:10px;overflow:hidden}
+  .tprog .bar i{display:block;height:100%;background:var(--yellow);transition:width .3s}
+  .tq-h{font-size:36px;line-height:42px;margin-top:40px}
+  .topts{display:flex;flex-direction:column;gap:12px;margin-top:28px}
+  .topt{background:#fff;border-radius:18px;padding:20px 22px;font-size:17px;cursor:pointer;display:flex;gap:14px;align-items:center;border:2px solid transparent;transition:.15s}
+  .topt:hover{border-color:var(--line)}
+  .topt .k{width:32px;height:32px;border-radius:10px;background:var(--bg);display:grid;place-items:center;font-weight:700;font-size:14px;flex:none}
+  .topt.sel{border-color:var(--ink)}.topt.sel .k{background:var(--yellow)}
+  .tqnav{display:flex;justify-content:space-between;margin-top:32px}
+  .tform{margin-top:28px;display:flex;flex-direction:column;gap:18px}
+  .tform label{display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:600;color:var(--ink)}
+  .tform input:not([type=checkbox]),.tform select{height:52px;border-radius:14px;border:0;background:var(--bg);padding:0 16px;font:16px inherit;font-family:inherit;color:var(--ink);outline:none;width:100%}
+  .tform input:focus,.tform select:focus{box-shadow:0 0 0 2px var(--yellow)}
+  .frow{display:grid;grid-template-columns:1fr 160px;gap:16px}
+  .opt-l{font-weight:400;color:var(--text2)}
+  .fcheck{flex-direction:row!important;align-items:flex-start;font-weight:400!important;font-size:14px!important;line-height:20px;color:var(--text2)!important;gap:10px!important}
+  .fcheck input{width:20px;height:20px;margin-top:0;accent-color:#1A1A1A;flex:none}
+  .ferr{color:#E01B1B;font-size:14px;min-height:0}
+  .tres{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:28px}
+  .tcard{display:flex;flex-direction:column;gap:14px}
+  .tcard.best{box-shadow:0 0 0 2px var(--yellow)}
+  .tcard .head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .tcard .nm{font-size:22px;font-weight:700;color:var(--ink);line-height:27px}
+  .tcard .why{font-size:15px;line-height:22px;color:var(--black)}
+  .tcard .why b{display:block;font-size:13px;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+  .tcard ul{padding-left:18px;font-size:15px;line-height:22px}
+  .tcard .btn{margin-top:auto;width:100%}
+  .tres-foot{margin-top:24px;display:flex;gap:12px;font-size:16px;color:var(--text2)}
+
+/* ===== v2: полноширинная раскладка ===== */
+html,body{background:var(--bg)}
+.screen{width:auto!important;max-width:none!important;min-height:100vh;margin:0!important;padding:0 0 64px!important}
+.wrap{max-width:1440px;margin:0 auto;padding:36px 48px 0}
+.top{position:sticky;top:0;z-index:30;height:72px;padding:0!important;display:block!important;background:#fff;border-bottom:1px solid var(--line)}
+.top-in{max-width:1440px;margin:0 auto;height:100%;padding:0 48px;display:flex;align-items:center;gap:40px}
+.top .right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.nav{white-space:nowrap}
+.lg{position:relative;width:36px;height:36px;flex:none;display:inline-block}
+.lg img{position:absolute;inset:0;width:36px;height:36px;object-fit:contain;z-index:1}
+.lg i{width:36px;height:36px}
+.logo{cursor:pointer;white-space:nowrap}
+.btn[disabled]{opacity:.45;cursor:default}
+#finalCard .btn[disabled]{background:#3A3D42;color:#9299A2;opacity:1}
+.btn.big{width:100%;height:52px;font-size:16px}
+.ulink{color:var(--ink);font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.motiv{cursor:pointer;margin-top:0!important;margin-bottom:24px}
+.tags-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.qside{display:flex;flex-direction:column;gap:24px}
+.toolbar{display:flex;gap:12px;align-items:center;margin-top:24px;flex-wrap:wrap}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.path-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.course .cinfo{min-width:0}
+.tres.four{grid-template-columns:repeat(4,1fr)!important}
+.tres{grid-template-columns:repeat(3,1fr)}
+.tz-more,.amore{font-size:15px;font-weight:600;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.amore{margin-top:14px;display:inline-block}
+.prof{cursor:pointer}
+/* колокольчик и панель */
+.bell{width:44px;height:44px;border-radius:12px;background:var(--bg);border:0;display:grid;place-items:center;position:relative;cursor:pointer}
+.bell:hover{background:#ECEEF0}
+.bell .badge{position:absolute;top:4px;right:4px;min-width:18px;height:18px;border-radius:9px;background:#F52222;color:#fff;font-size:11px;font-weight:700;display:none;place-items:center;padding:0 4px;border:2px solid #fff}
+#notifPanel{position:fixed;top:80px;right:max(16px,calc((100vw - 1440px)/2 + 48px));width:400px;max-height:70vh;background:#fff;border-radius:20px;box-shadow:0 16px 48px rgba(0,0,0,.16);z-index:40;display:none;flex-direction:column;overflow:hidden}
+#notifPanel.on{display:flex}
+.np-head,.np-foot{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;gap:12px}
+.np-head{border-bottom:1px solid var(--line)}.np-head b{font-size:17px}
+.np-head a,.np-foot a{font-size:14px;font-weight:600;cursor:pointer;color:var(--ink);white-space:nowrap}
+.np-foot{border-top:1px solid var(--line);font-size:13px;color:var(--text2)}
+#npList{overflow:auto;flex:1}
+.np-item{display:flex;gap:12px;padding:14px 20px;cursor:pointer;border-bottom:1px solid var(--bg)}
+.np-item:hover{background:var(--bg)}
+.np-item i{width:8px;height:8px;border-radius:50%;margin-top:7px;flex:none;background:transparent}
+.np-item.new i{background:#F52222}
+.np-item .t{font-size:15px;line-height:20px;color:var(--ink)}
+.np-item:not(.new) .t{color:var(--text2)}
+.np-item .m{font-size:12px;color:var(--muted);margin-top:4px}
+.np-empty{padding:28px 20px;text-align:center;color:var(--text2);font-size:15px}
+/* оверлеи */
+.overlay{position:fixed;inset:0;background:rgba(20,22,25,.5);z-index:50;display:none;overflow:auto;padding:40px 16px}
+.overlay.on{display:block}
+.sheet{max-width:1040px;margin:0 auto;background:var(--bg);border-radius:28px;padding:36px;position:relative}
+.sheet.small{max-width:620px;background:#fff}
+.sheet .x{position:absolute;top:18px;right:18px;width:40px;height:40px;border-radius:12px;border:0;background:#fff;font-size:18px;cursor:pointer;z-index:2}
+.pm-hero{display:flex;justify-content:space-between;align-items:center;gap:24px}
+.pm-hero h1{margin-top:10px;font-size:40px;line-height:44px}
+.pm-hero p{font-size:18px;line-height:26px;margin-top:10px;max-width:640px}
+.pm-video{margin-top:24px;border-radius:24px;aspect-ratio:16/7;background:radial-gradient(120% 120% at 20% 10%,#4A4F57 0%,#23262B 60%,#17191C 100%);position:relative;overflow:hidden;cursor:pointer}
+.pm-video .play{position:absolute;left:50%;top:50%;width:80px;height:80px;margin:-40px 0 0 -40px;border-radius:50%;background:var(--yellow);display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.35);transition:.2s}
+.pm-video.playing .play{opacity:0}
+.pm-video .bar{position:absolute;left:24px;right:24px;bottom:20px;display:flex;align-items:center;gap:14px;color:#fff;font-size:13px;font-weight:600}
+.pm-video .bar .ln{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.25);overflow:hidden}
+.pm-video .bar .ln i{display:block;height:100%;width:0;background:var(--yellow)}
+.pv-badge{position:absolute;left:24px;top:20px;background:rgba(255,255,255,.12);color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:10px}
+.pm-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+.pm-list{padding-left:20px;margin-top:12px;font-size:16px;line-height:24px}
+.pm-list li+li{margin-top:6px}
+.pm-grid .skills{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pm-cta{display:flex;gap:12px;margin-top:24px}
+/* тизер */
+.tz-lock{position:relative;margin-top:20px}
+.tz-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;filter:blur(6px);opacity:.7;pointer-events:none}
+.tz-blur{background:#fff;border-radius:24px;padding:28px;min-height:120px}
+.tz-blur .nm{font-size:20px;font-weight:700}.tz-blur .m{margin-top:8px;color:var(--text2)}
+.tz-over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:16px}
+.tz-over b{font-size:17px;color:var(--ink)}.tz-over span{font-size:14px;color:var(--text2)}
+/* активности */
+.acttabs{display:flex;gap:6px;background:#fff;border-radius:16px;padding:6px;margin:18px 0 16px;width:max-content;max-width:100%;overflow-x:auto}
+.acttabs span{padding:10px 18px;border-radius:12px;font-weight:600;font-size:15px;cursor:pointer;color:var(--text2);white-space:nowrap}
+.acttabs span.on{background:var(--ink);color:#fff}
+.subbox .sb-ico{width:56px;height:56px;border-radius:16px;background:var(--yellow);display:grid;place-items:center;flex:none}
+.subbox .tgl{margin-left:auto}
+.ocard{display:flex;flex-direction:column;gap:12px}
+.ocard .cname{font-size:21px}
+.ocard .cdesc{font-size:15px;line-height:22px;color:var(--text2)}
+.acts3{display:flex;gap:8px;margin-top:auto;flex-wrap:wrap}.acts3 .btn{flex:1}
+/* тест по теме */
+.place{background:var(--yellow-soft)}
+.place .row{display:flex;justify-content:space-between;align-items:center}
+.place .tag.y{background:#fff}
+.ptxt{font-size:15px;line-height:21px;margin-top:10px}
+.tabbar{display:none}
+.ccard .row .tag{white-space:nowrap}
+
+/* ===== МОБИЛЬНАЯ ВЕРСИЯ ===== */
+@media (max-width:820px){
+  .wrap{padding:20px 16px 0}
+  .screen{padding-bottom:96px!important}
+  .top{height:60px}
+  .top-in{padding:0 16px;gap:12px}
+  .top .nav{display:none}
+  .lgt{font-size:18px}
+  .bell{width:40px;height:40px}
+  .ava{width:36px;height:36px}
+  #t1 .top .right .tag,#t2 .top .right .tag,#t3 .top .right .tag,#t4 .top .right .tag,#t5 .top .right .tag{display:none}
+  h1{font-size:28px!important;line-height:33px!important}
+  h2{font-size:21px}
+  .sub{font-size:15px}
+  .card{padding:20px;border-radius:20px}
+  .grid1,.grid2,.grid3,.pgrid,.tformats,.pm-grid,.agrid,.cgrid,.tres,.tres.four{grid-template-columns:1fr!important}
+  .grid1,.grid2,.grid3{gap:16px;margin-top:20px}
+  .hero{grid-template-columns:1fr;padding:24px;border-radius:24px;gap:20px}
+  .hero-h{font-size:34px!important;line-height:38px!important}
+  .hero-p{font-size:17px;line-height:24px}
+  .hero-ok{flex-direction:column;gap:8px}
+  .hero-stat{padding:20px}.hero-stat b{font-size:44px;line-height:48px}
+  .atlas-banner{flex-wrap:wrap;gap:14px;padding:20px}
+  .atlas-banner .deco{display:none}
+  .atlas-banner .ab-txt{flex:1;min-width:0}
+  .atlas-banner .btn{margin-left:0;width:100%}
+  .atlas-banner h3{font-size:19px}
+  .course{grid-template-columns:48px 1fr auto!important;gap:12px!important;padding:16px!important}
+  .course .ico{width:48px;height:48px}
+  .course .track{grid-column:1/-1;order:5}
+  .course .btn{grid-column:1/-1;order:6;width:100%}
+  .course .pct{order:3}
+  .cname{font-size:17px}
+  .path{min-height:0!important;padding:20px!important}
+  .path-head{flex-direction:column}
+  .path-head .btn{width:100%}
+  #pathSvg text{font-size:22px}
+  .bigpct b{font-size:34px}
+  .eitem{grid-template-columns:60px 1fr!important;gap:14px!important}
+  .eitem .date{width:60px;height:60px;border-radius:16px}.eitem .date b{font-size:22px}
+  .eitem .btn{grid-column:1/-1}
+  .intern{grid-template-columns:1fr!important;gap:16px!important}
+  .acts2{flex-direction:row}.acts2 .btn{flex:1}
+  .toolbar{flex-direction:column;align-items:stretch}
+  .search{flex:none!important;width:100%}
+  .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;margin:0 -16px;padding-left:16px;padding-right:16px}
+  .chip{flex:none}
+  .subbox{flex-wrap:wrap}
+  .prof{grid-template-columns:1fr 84px!important}
+  .match svg{width:72px;height:72px}
+  .achs{grid-template-columns:repeat(3,1fr)!important}
+  .defs{grid-template-columns:1fr!important}
+  .lstep-title{font-size:22px}.lstep-text{font-size:16px;line-height:25px}
+  .lstep-body{min-height:0}
+  .lsteps-head{flex-wrap:wrap;gap:12px}
+  .navrow .btn{flex:1}.navrow{gap:10px}
+  .tq-h{font-size:24px!important;line-height:30px!important;margin-top:28px}
+  .topt{padding:16px;font-size:16px}
+  .frow{grid-template-columns:1fr 110px}
+  .tz-row{grid-template-columns:1fr}
+  .tres-foot{flex-wrap:wrap}
+  .sheet{padding:24px 16px;border-radius:24px}
+  .overlay{padding:12px 8px}
+  .pm-hero{flex-direction:column;align-items:flex-start}
+  .pm-hero h1{font-size:30px;line-height:34px}
+  .pm-video{aspect-ratio:16/10}
+  .pm-cta{flex-direction:column}.pm-cta .btn{width:100%}
+  #notifPanel{top:68px;right:8px;left:8px;width:auto;max-height:75vh}
+  .tabbar{display:flex;position:fixed;bottom:0;left:0;right:0;height:68px;background:#fff;border-top:1px solid var(--line);z-index:35;padding-bottom:env(safe-area-inset-bottom)}
+  .tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer}
+  .tabbar svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linejoin:round}
+  .tabbar a.on{color:var(--ink)}
+  .tabbar a.on svg{stroke:var(--ink);fill:var(--yellow)}
+  #t1 ~ .tabbar{}
+  .qnav{flex-wrap:wrap}.qnav .btn{flex:1}
+  .ccard .meta{flex-wrap:wrap}
+  .fres-big{font-size:34px}
+  .acttabs{width:100%}.acttabs span{flex:1;text-align:center;padding:10px 8px;font-size:14px}
+  .pcard .bigava{width:88px;height:88px;font-size:36px}
+  #toast{bottom:84px!important;width:calc(100% - 32px);text-align:center}
+}
+body.notest .tabbar{display:none!important}
+.setrow .btn{margin-left:auto}
+@media (min-width:821px){.course{grid-template-columns:56px minmax(200px,260px) 1fr 64px 140px!important}}
+.plist{display:none}
+.eitem>div{min-width:0}.eitem .tags{flex-wrap:wrap}
+@media (max-width:820px){
+  #pathSvg{display:none!important}
+  .plist{display:flex;flex-direction:column;margin-top:16px;position:relative}
+  .pli{display:flex;gap:14px;align-items:flex-start;padding:10px 0;position:relative;cursor:pointer}
+  .pli:not(:last-child):before{content:"";position:absolute;left:21px;top:54px;bottom:-10px;border-left:3px dotted #C9CDD2}
+  .pli.done:not(:last-child):before{border-color:var(--yellow)}
+  .pli .dot{width:45px;height:45px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:800;background:#DDE0E4;color:#6B717A}
+  .pli.done .dot{background:var(--yellow);color:var(--ink)}
+  .pli.cur .dot{background:#fff;border:4px solid var(--ink);color:var(--ink);box-shadow:0 0 0 6px rgba(255,221,45,.45)}
+  .pli .n{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:4px}
+  .pli .t{font-size:17px;font-weight:700;color:var(--ink);margin-top:2px}
+  .pli.lock .t{color:var(--text2);font-weight:600}
+  .acttabs span{white-space:normal;font-size:13px;padding:9px 6px;line-height:16px}
+}
+.proto-note{margin-top:28px;font-size:13px;line-height:18px;color:var(--muted)}
+.btn.sm{height:40px;padding:0 16px;font-size:14px}
+.acct-slot{display:flex;align-items:center;gap:10px}
+#acctMenu{position:fixed;top:80px;right:max(16px,calc((100vw - 1440px)/2 + 48px));width:280px;background:#fff;border-radius:20px;box-shadow:0 16px 48px rgba(0,0,0,.16);z-index:41;display:none;flex-direction:column;overflow:hidden}
+#acctMenu.on{display:flex}
+#acctMenu .am-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+#acctMenu .am-head b{font-size:16px}#acctMenu .am-head span{font-size:13px;color:var(--text2)}
+#acctMenu a{padding:14px 20px;font-size:15px;font-weight:500;cursor:pointer;color:var(--ink)}
+#acctMenu a:hover{background:var(--bg)}
+#acctMenu a.out{color:#E01B1B;border-top:1px solid var(--line)}
+.atabs{display:flex;gap:6px;background:var(--bg);border-radius:14px;padding:5px;margin-top:16px}
+.atab{flex:1;text-align:center;padding:10px;border-radius:10px;font-weight:600;cursor:pointer;color:var(--text2)}
+.atab.on{background:#fff;color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+#aIn .tform{margin-top:18px}
+.welcome{display:none;align-items:center;gap:16px;background:#fff;border-radius:20px;padding:16px 20px;margin-bottom:16px;font-size:15px;line-height:21px}
+.welcome .wtxt{flex:1}
+.welcome .btn{flex:none}
+@media (max-width:820px){
+  #acctMenu{top:68px;right:8px;left:auto;width:calc(100% - 16px);max-width:320px}
+  .acct-slot .btn.sm{padding:0 12px}
+  .welcome{flex-direction:column;align-items:stretch}
+  .top-in .acct-slot .btn.g{display:none}
+}
+</style></head><body>
+<section class="screen" id="t1">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><div class="right acct-slot"></div></div></header>
+  <div class="wrap">
+    <div class="welcome"><span class="wtxt"></span><button class="btn y sm" data-go="s1">Мой кабинет</button></div>
+    <div class="hero">
+      <div>
+        <div class="tag" style="background:rgba(0,0,0,.08);color:var(--ink)">Бесплатно · для студентов 1–2 курса</div>
+        <h1 class="hero-h">Найди своё направление в IT</h1>
+        <p class="hero-p">Ответь на несколько вопросов — подберём 2–3 подходящие профессии, объясним почему и покажем путь по шагам.</p>
+        <div class="hero-ok"><span>✓ Профессии с долей совпадения</span><span>✓ Путь освоения по шагам</span><span>✓ Оценка твоего уровня</span></div>
+      </div>
+      <div class="hero-stat"><b>59%</b><span>студентов 1–2 курса не понимают, с чего начать путь в IT. Тест помогает определиться.</span></div>
+    </div>
+    <h2 style="margin-top:36px">Выбери формат</h2>
+    <div class="tformats">
+      <div class="card tfmt main" id="tExpress">
+        <div class="tag y">Рекомендуем</div>
+        <h3>Экспресс-тест</h3>
+        <p>8 вопросов о твоих интересах и привычках. Подходит, чтобы быстро понять направление.</p>
+        <div class="tmeta"><span class="tag">≈ 5 минут</span><span class="tag">8 вопросов</span></div>
+        <button class="btn y">Начать экспресс-тест</button>
+      </div>
+      <div class="card tfmt" id="tFull">
+        <div class="tag">Подробнее</div>
+        <h3>Полная версия</h3>
+        <p>Больше вопросов и точнее результат. Пригодится, если экспресс-тест не дал уверенного ответа.</p>
+        <div class="tmeta"><span class="tag">≈ 15 минут</span><span class="tag">25 вопросов</span></div>
+        <button class="btn g">Начать полную версию</button>
+      </div>
+    </div>
+    <div class="tknow">Уже знаешь, кем хочешь стать? <a id="tKnow">Выбрать профессию без теста →</a></div>
+    <div class="proto-note">Учебный прототип проекта «Т-Навигатор» для Т-Образования. Это не официальный сайт Т-Банка; введённые данные сохраняются только в этом браузере.</div>
+  </div>
+</section>
+<section class="screen" id="t2">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><div class="right acct-slot"></div></div></header>
+  <div class="wrap tnarrow">
+    <div class="tprog"><div class="row"><span id="tqNo">Вопрос 1 из 8</span><a id="tqExit">Выйти из теста</a></div><div class="bar"><i id="tqBar"></i></div></div>
+    <h1 class="tq-h" id="tqText"></h1>
+    <div class="topts" id="tqOpts"></div>
+    <div class="tqnav"><button class="btn g" id="tqBack">← Назад</button><button class="btn y" id="tqNext" disabled>Далее →</button></div>
+  </div>
+</section>
+<section class="screen" id="t5">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><div class="right acct-slot"></div></div></header>
+  <div class="wrap"><div class="tnarrow"><div class="tag y">Тест пройден</div>
+    <h1 style="margin-top:12px">Тебе больше всего подходит</h1>
+    <div class="card tcard best" id="tzCard" style="margin-top:24px"></div>
+    <div class="tz-lock"><div class="tz-row" id="tzLocked"></div><div class="tz-over"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="4" y="10" width="16" height="11" rx="3" stroke="#1A1A1A" stroke-width="2"/><path d="M8 10V7a4 4 0 118 0v3" stroke="#1A1A1A" stroke-width="2"/></svg><b>Ещё 2 профессии, разбор по навыкам и путь обучения</b><span>Откроются после регистрации</span></div></div>
+    <button class="btn y big" id="tzGo" style="margin-top:20px">Зарегистрироваться и увидеть полный результат</button></div></div>
+</section>
+<section class="screen" id="t3">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><div class="right acct-slot"></div></div></header>
+  <div class="wrap"><div class="tnarrow"><div class="tag y" id="tRegTag">Тест пройден</div>
+    <h1 style="margin-top:12px" id="tRegH">Зарегистрируйся, чтобы увидеть полный результат</h1>
+    <div class="sub">Сохраним результат и подберём программы для твоего вуза. Займёт меньше минуты.</div>
+    <div class="card tform"><label>Как тебя зовут<input id="fName" placeholder="Имя"></label>
+      <label>Вуз<select id="fUni"><option value="">Выбери из списка</option><option>СПбПУ</option><option>ИТМО</option><option>СПбГУ</option><option>ВШЭ</option><option>Другой вуз</option></select></label>
+      <div class="frow"><label>Факультет / институт<select id="fFac"><option value="">Выбери из списка</option><option>Институт компьютерных наук</option><option>Физико-механический институт</option><option>Факультет математики</option><option>Экономический факультет</option><option>Другой</option></select></label><label>Курс<select id="fCourse"><option value="">—</option><option>1</option><option>2</option></select></label></div>
+      <label>Почта <span class="opt-l">— логин для входа и уведомления</span><input id="fEmail" type="email" placeholder="name@mail.ru" autocomplete="email"></label>
+      <label>Пароль <span class="opt-l">— не короче 6 символов</span><input id="fPass" type="password" placeholder="Придумай пароль" autocomplete="new-password"></label>
+      <label class="fcheck"><input type="checkbox" id="fConsent"> Согласен(на) на обработку персональных данных и получение писем — не чаще 1–2 раз в неделю</label>
+      <div class="ferr" id="fErr"></div><div class="m" style="font-size:13px;color:var(--muted)">Прототип: аккаунт хранится только в этом браузере, не используй настоящий пароль.</div><button class="btn y big" id="fGo">Показать полный результат</button></div></div></div>
+</section>
+<section class="screen" id="t4">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><div class="right acct-slot"></div></div></header>
+  <div class="wrap">
+    <h1 id="tResH">Тебе подходят эти профессии</h1>
+    <div class="sub" id="tResSub">Мы посчитали совпадение по твоим ответам. Выбери профессию — и откроется платформа с путём обучения.</div>
+    <div class="tres" id="tRes"></div>
+    <div class="tres-foot"><a data-go="s1" id="tResBack">← В личный кабинет</a><a id="tRetry">Пройти тест ещё раз</a><span>·</span><a id="tAll">Посмотреть все профессии</a></div>
+  </div>
+</section>
+<section class="screen" id="s1">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap"><h1 id="s1h">Моё обучение</h1><div class="sub" id="s1sub"></div>
+    <div class="atlas-banner" data-go="s5"><div class="deco"></div>
+      <div class="ab-ico"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="#FFDD2D" stroke-width="2.5"/><path d="M20.5 11.5l-2.8 6.2-6.2 2.8 2.8-6.2z" fill="#FFDD2D"/></svg></div>
+      <div class="ab-txt"><h3>Атлас профессий</h3><p>Профессии, на которые готовит Т-Образование: чем занимается специалист, навыки и видео о работе</p></div><button class="btn">Открыть атлас</button></div>
+    <div class="grid1"><div><h2>Твои курсы</h2><div class="courses" id="myCourses"></div></div>
+      <div><div class="card motiv" id="motiv"><div class="lbl">Мотивация дня</div><div class="q">“</div><p id="motivText"></p><small>Нажми, чтобы увидеть ещё</small></div>
+        <div class="card"><div class="cal-head"><h3>Календарь</h3><div class="arr"><span>‹</span><span>›</span></div></div>
+          <div class="sub" style="font-size:15px;margin-top:4px" id="calMonth"></div><div class="cal" id="calGrid"></div><div class="evs" id="calEvs"></div>
+          <a class="chip" data-go="s6" style="margin-top:16px;width:100%;justify-content:center;background:var(--bg)">Все мероприятия</a></div></div></div></div>
+</section>
+<section class="screen" id="s2">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap"><div class="crumbs"><a data-go="s1">Моё обучение</a> / <b id="cCrumb"></b></div>
+    <h1 style="margin-top:10px" id="cTitle"></h1><div class="sub" id="cSub"></div>
+    <div class="grid2"><div class="card path">
+        <div class="path-head"><div><h2 id="pathH"></h2><div class="legend"><span><i style="background:var(--yellow)"></i>Пройдено</span><span><i style="background:#fff;border:3px solid var(--ink)"></i>Сейчас</span><span><i style="background:var(--gray-node)"></i>Впереди</span></div></div><button class="btn y" id="cCont"></button></div>
+        <svg viewBox="0 0 860 790" width="100%" style="margin-top:8px;display:block" id="pathSvg"></svg><div class="plist" id="pathList"></div></div>
+      <div class="side">
+        <div class="card"><h3>Матрица компетенций</h3><svg viewBox="-50 0 500 300" width="100%" style="display:block;margin-top:6px" id="radar"></svg>
+          <div class="legend" style="margin-top:4px"><span><i style="background:#FFDD2D"></i>Твой уровень</span><span><i style="background:#fff;border:2px dashed #1A1A1A"></i>Требования к стажёру</span></div>
+          <div style="margin-top:14px;font-size:15px;line-height:21px" id="radarCap"></div></div>
+        <div class="card prog"><h3>Прогресс по курсу</h3><div class="sub" style="font-size:14px;margin-top:2px" id="perLessonTxt"></div>
+          <div class="bigpct"><b id="p2pct">0%</b><span id="p2meta"></span></div>
+          <div class="track"><span class="lbl" style="left:4px">A</span><span class="lbl" style="right:4px">B</span><div class="ln"></div><div class="fill" id="p2fill"></div><div class="pt a"></div><div class="pt b"></div><div class="you" id="p2you">Ты</div><div class="meDot" id="p2dot"></div></div></div>
+        <div class="card" id="finalCard" style="background:var(--ink);color:#fff"><div class="row" style="display:flex;justify-content:space-between;align-items:center"><h3 style="color:#fff">Итоговый тест</h3><span class="tag" style="background:rgba(255,255,255,.12);color:var(--yellow)">По желанию</span></div>
+          <div style="font-size:15px;line-height:21px;color:#C9CDD2;margin-top:10px">Вопросы по всем шагам курса. Покажет, какие темы стоит повторить, и не влияет на прогресс. <span id="finalLock"></span></div>
+          <button class="btn y" style="margin-top:18px;width:100%" id="finalBtn"></button></div>
+        <div class="card"><h3 id="cEvH">Мероприятия</h3><div class="evs" style="border-top:0;padding-top:0" id="cEvents"></div><a class="chip" data-go="s6" style="margin-top:14px;width:100%;justify-content:center;background:var(--bg)">Все мероприятия</a></div>
+      </div></div></div>
+</section>
+<section class="screen" id="s3">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap">
+    <div class="crumbs"><a data-go="s1">Моё обучение</a> / <a data-go="s2" id="lcCourse"></a> / <span id="lcStep">Шаг 1</span> / <b id="lcLesson">Урок 1</b></div>
+    <h1 style="margin-top:10px" id="lTitle">Тема: Что такое MLOps и зачем он нужен</h1>
+    <div style="display:flex;gap:8px;margin-top:14px"><span class="tag" id="lBadge">Шаг 1 · урок 1 из 3</span><span class="tag" id="lTag">≈ 10 мин</span><span class="tag y" id="lPer"></span></div>
+    <div class="grid3">
+      <div>
+        <div class="card lsteps">
+          <div class="lsteps-head"><h3>Шаги урока</h3><div class="pills" id="pills"></div></div>
+          <div class="lstep-body">
+            <div class="lstep-no" id="stNo">Шаг 1 из 3</div>
+            <div class="lstep-title" id="stTitle"></div>
+            <div class="lstep-text" id="stText"></div>
+          </div>
+          <div class="lstep-nav"><button class="btn g" id="stPrev">Назад</button><button class="btn y" id="stNext">Далее</button></div>
+        </div>
+        <div class="navrow"><button class="btn" style="background:#fff" id="prev">← Предыдущее</button><button class="btn y" id="next">Следующее →</button></div>
+
+        <div class="card" style="margin-top:24px">
+          <h3>Важные определения</h3>
+          <div class="defs">
+            <div class="def"><b>MLOps</b><p>Практики, которые доводят ML-модель от ноутбука до работающего сервиса и поддерживают её там.</p></div>
+            <div class="def"><b>Пайплайн</b><p>Цепочка автоматических шагов: данные → обучение → проверка → выкладка.</p></div>
+            <div class="def"><b>Артефакт модели</b><p>Сохранённая обученная модель с версией, параметрами и метриками.</p></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:24px">
+          <h3>Полезные ресурсы</h3>
+          <div class="res">
+            <div class="r"><div class="n y">1</div><div><div class="t">Скачать конспект</div><div class="m">PDF · 1,2 МБ</div></div><div class="go">↓</div></div>
+            <div class="r"><div class="n">2</div><div><div class="t">Наши ресурсы</div><div class="m">Материалы и записи Т-Образования по теме</div></div><div class="go">›</div></div>
+            <div class="r"><div class="n">3</div><div><div class="t">Внешние ресурсы</div><div class="m">Подборка открытых курсов и статей</div></div><div class="go">›</div></div>
+          </div>
+        </div>
+
+        <div class="card quiz" id="quiz" style="margin-top:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><h3>Проверь себя</h3><span class="tag y">По желанию</span></div>
+          <div class="sub" style="font-size:15px;margin-top:6px">3 вопроса по уроку. На прогресс не влияет — можно пропустить.</div>
+          <div id="qBody"></div>
+          <div class="qnav"><button class="btn y" id="qCheck">Проверить</button><button class="btn g" id="qSkip">Пропустить</button><span id="qRes"></span></div>
+        </div>
+      </div>
+
+      <div class="qside"><div class="card desc">
+        <h3>Описание</h3>
+        <p id="lDesc"></p>
+        <div class="checks" id="lChecks"></div>
+        <div class="reward" id="lReward"></div>
+      </div>
+        <div class="card place" id="lPlace"><div class="row"><h3>Знаешь тему?</h3><span class="tag y">Тест по теме</span></div><div class="ptxt" id="lPlaceTxt"></div><button class="btn ok" id="lPlaceBtn" style="width:100%;margin-top:16px"></button></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="screen" id="s4">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap"><h1>Каталог курсов</h1><div class="sub">Бесплатные курсы по профессиям, на которые готовит Т-Образование.</div>
+    <div class="atlas-banner" data-go="s5"><div class="deco"></div>
+      <div class="ab-ico"><svg width="32" height="32" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12" stroke="#FFDD2D" stroke-width="2.5"/><path d="M20.5 11.5l-2.8 6.2-6.2 2.8 2.8-6.2z" fill="#FFDD2D"/></svg></div>
+      <div class="ab-txt"><h3>Атлас профессий</h3><p>Не знаешь, какой курс выбрать? Начни с профессии — подскажем путь</p></div><button class="btn">Открыть атлас</button></div>
+    <div class="toolbar"><input class="search" id="q" placeholder="Поиск по курсам"><div class="chips"><span class="chip on" data-f="all">Все</span><span class="chip" data-f="dev">Разработка</span><span class="chip" data-f="mob">Мобильная</span><span class="chip" data-f="data">Данные и анализ</span><span class="chip" data-f="ops">Инфраструктура</span><span class="chip" data-f="qa">Тестирование</span><span class="chip" data-f="mine">Мои курсы</span></div></div>
+    <div class="cgrid" id="cgrid"></div><div class="empty" id="empty">Ничего не нашлось. Попробуй другой запрос или загляни в атлас профессий.</div></div>
+</section>
+<section class="screen" id="s5">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap"><h1>Атлас профессий</h1><div class="sub" id="aSub"></div>
+    <div class="legendbar"><span class="tag y" id="aTag"></span><a class="chip" id="retest" style="height:32px;font-size:14px">Пройти тест заново</a></div>
+    <div class="agrid" id="agrid"></div></div>
+</section>
+<section class="screen" id="s6">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap"><h1>Активности</h1><div class="acttabs"><span data-go="s6">Мероприятия</span><span data-go="s7">Стажировки</span><span data-go="s11">Другие активности</span></div>
+    <div class="sub">Мероприятия по твоим профессиям: <b id="evProfs"></b>. Записывайся — напомним за день.</div>
+    <div class="toolbar"><div class="chips"><span class="chip on" data-ef="mine">По моим профессиям</span><span class="chip" data-ef="all">Все</span><span class="chip" data-ef="Вебинар">Вебинары</span><span class="chip" data-ef="Лекция">Лекции</span><span class="chip" data-ef="Хакатон">Хакатоны</span><span class="chip" data-ef="reg">Мои записи</span></div></div>
+    <div class="elist" id="elist"></div><div class="empty" id="eempty">Здесь пока пусто. Загляни во «Все».</div></div>
+</section>
+<section class="screen" id="s7">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap"><h1>Активности</h1><div class="acttabs"><span data-go="s6">Мероприятия</span><span data-go="s7">Стажировки</span><span data-go="s11">Другие активности</span></div>
+    <div class="sub">Оплачиваемые стажировки Т-Старт. Готовность растёт вместе с прогрессом по курсу — от 70% можно подавать заявку.</div>
+    <div class="card subbox"><div class="sb-ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg></div>
+      <div><div class="t">Подборка стажировок</div><div class="m">Придёт в личный кабинет и на почту — не чаще 1–2 раз в неделю.</div></div><div class="tgl" id="subTgl"></div></div>
+    <div class="toolbar"><div class="chips"><span class="chip on" data-if="mine">По моим профессиям</span><span class="chip" data-if="all">Все</span><span class="chip" data-if="open">Набор открыт</span><span class="chip" data-if="ready">Готов(а) подать</span></div></div>
+    <div class="ilist" id="ilist"></div></div>
+</section>
+<section class="screen" id="s11">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap"><h1>Активности</h1><div class="acttabs"><span data-go="s6">Мероприятия</span><span data-go="s7">Стажировки</span><span data-go="s11">Другие активности</span></div>
+    <div class="sub">Т-Академия и другие программы Т-Образования для студентов и молодых специалистов.</div>
+    <div class="cgrid" id="olist" style="margin-top:24px"></div></div>
+</section>
+<section class="screen" id="s8">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap"><h1>Профиль</h1><div class="pgrid">
+      <div class="card pcard"><div class="bigava" id="pAva">А</div><div class="nm" id="pName"></div><div class="uni" id="pUni"></div>
+        <div class="lvl"><div class="row"><b>Прогресс по курсам</b></div><div id="profProg"></div></div>
+        <button class="btn y" style="width:100%;margin-top:16px" id="editP">Редактировать профиль</button>
+        <button class="btn g" style="width:100%;margin-top:8px" id="retestP">Пройти тест заново</button>
+        <button class="btn g" style="width:100%;margin-top:8px" id="logoutP">Выйти из аккаунта</button>
+        <div class="m" style="margin-top:10px;font-size:13px;color:var(--text2)" id="lastTest"></div></div>
+      <div style="display:flex;flex-direction:column;gap:24px">
+        <div class="card"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>Ачивки</h3><span class="sub" style="font-size:14px;margin:0" id="achCount"></span></div><div class="achs" id="achs"></div></div>
+        <div class="card" id="notifSettings"><h3>Уведомления</h3><div style="margin-top:6px">
+            <div class="setrow"><div><div class="t">В личном кабинете</div><div class="m">Колокольчик в правом верхнем углу: уроки, мероприятия, стажировки</div></div><div class="tgl" id="tglLk"></div></div>
+            <div class="setrow"><div><div class="t">По почте</div><div class="m" id="mailHint"></div></div><div class="tgl" id="tglMail"></div></div>
+            <div class="setrow" id="freqRow"><div><div class="t">Частота писем</div><div class="m">Сколько писем присылать</div></div><select id="freq"><option>1 раз в неделю</option><option>2 раза в неделю</option><option>Только дедлайны</option></select></div>
+            <div class="setrow"><div><div class="t">Мои данные</div><div class="m">Храним только вуз, факультет, курс и почту</div></div><button class="btn g" id="delData">Удалить данные</button></div></div></div>
+      </div></div></div>
+</section>
+<section class="screen" id="s9">
+  <header class="top"><div class="top-in"><div class="logo"><span class="lg"><img src="tbank-logo.svg" alt="" onerror="this.remove()"><i>Т</i></span><span class="lgt">Т-Навигатор</span></div><nav class="nav"><span data-nav="s1">Моё обучение</span><span data-nav="s4">Каталог курсов</span><span data-nav="s5">Атлас профессий</span><span data-nav="act">Активности</span></nav><div class="right"><button class="bell" aria-label="Уведомления"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9" stroke="#1A1A1A" stroke-width="2" stroke-linejoin="round"/><path d="M10 21a2 2 0 004 0" stroke="#1A1A1A" stroke-width="2"/></svg><span class="badge"></span></button><div class="ava">А</div></div></div></header>
+  <div class="wrap"><div class="crumbs"><a data-go="s1">Моё обучение</a> / <a data-go="s2" id="fCrumb"></a> / <b>Тест</b></div>
+    <h1 style="margin-top:10px" id="fTitle"></h1>
+    <div class="tags-row"><span class="tag y" id="fTag"></span><span class="tag" id="fCount"></span><span class="tag">≈ 5–10 мин</span></div>
+    <div class="grid3"><div><div class="card quiz"><div id="fBody"></div><div class="qnav"><button class="btn y" id="fCheck">Узнать результат</button><button class="btn g" data-go="s2">Вернуться к курсу</button></div></div></div>
+      <div class="qside"><div class="card desc" id="fHow"></div><div class="card" id="fResult" style="display:none"></div></div></div></div>
+</section>
+
+<div id="notifPanel"><div class="np-head"><b>Уведомления</b><a id="npAll">Прочитать все</a></div><div id="npList"></div><div class="np-foot"><span id="npMail"></span><a id="npSet">Настройки</a></div></div>
+<div id="acctMenu"><div class="am-head"><b id="amName"></b><span id="amMail"></span></div><a id="amCab">Мой кабинет</a><a id="amProf">Профиль и настройки</a><a data-nav="act">Активности</a><a id="amOut" class="out">Выйти</a></div>
+<div class="overlay" id="authModal"><div class="sheet small"><button class="x" id="aClose" aria-label="Закрыть">✕</button><h2>Т-Навигатор</h2>
+  <div class="atabs"><span class="atab on" data-t="in">Вход</span><span class="atab" data-t="up">Регистрация</span></div>
+  <div id="aIn"><div class="tform"><label>Почта<input id="aEmail" type="email" placeholder="name@mail.ru" autocomplete="email"></label><label>Пароль<input id="aPass" type="password" placeholder="Пароль" autocomplete="current-password"></label><div class="ferr" id="aErr"></div><button class="btn y big" id="aLogin">Войти</button></div></div>
+  <div id="aUp" style="display:none"><p class="sub" style="margin-top:16px">Регистрация проходит вместе с тестом: сначала подберём профессию, потом ты создашь аккаунт и сразу начнёшь обучение.</p><button class="btn y big" id="aTest" style="margin-top:18px">Пройти тест и зарегистрироваться</button><button class="btn g big" id="aNoTest" style="margin-top:10px">Зарегистрироваться без теста</button></div>
+</div></div>
+<div class="overlay" id="pmodal"><div class="sheet"><button class="x" id="pmClose" aria-label="Закрыть">✕</button><div id="pmBody"></div></div></div>
+<div class="overlay" id="editModal"><div class="sheet small"><h2>Редактировать профиль</h2><div class="sub">Данные обновятся без повторного теста. Курсы и прогресс сохранятся.</div><div class="tform" style="margin-top:20px"><label>Как тебя зовут<input id="eName" placeholder="Имя"></label>
+      <label>Вуз<select id="eUni"><option value="">Выбери из списка</option><option>СПбПУ</option><option>ИТМО</option><option>СПбГУ</option><option>ВШЭ</option><option>Другой вуз</option></select></label>
+      <div class="frow"><label>Факультет / институт<select id="eFac"><option value="">Выбери из списка</option><option>Институт компьютерных наук</option><option>Физико-механический институт</option><option>Факультет математики</option><option>Экономический факультет</option><option>Другой</option></select></label><label>Курс<select id="eCourse"><option value="">—</option><option>1</option><option>2</option></select></label></div>
+      <label>Почта <span class="opt-l">— логин для входа и уведомления</span><input id="eEmail" type="email" placeholder="name@mail.ru" autocomplete="email"></label>
+      
+      <label class="fcheck"><input type="checkbox" id="eConsent"> Согласен(на) на обработку персональных данных и получение писем — не чаще 1–2 раз в неделю</label>
+      <div class="ferr" id="eErr"></div><div class="qnav"><button class="btn y" id="eSave">Сохранить</button><button class="btn g" id="eCancel">Отмена</button></div></div></div></div>
+<nav class="tabbar"><a data-nav="s1"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z"/></svg>Обучение</a><a data-nav="s4"><svg viewBox="0 0 24 24"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/></svg>Каталог</a><a data-nav="s5"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></svg>Атлас</a><a data-nav="act"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Активности</a><a data-nav="s8"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Профиль</a></nav>
+<div id="toast"></div>
+<script>
+/* ========================= ПРОФЕССИИ (по направлениям Т-Образования: Т-Старт, Т-Академия) ========================= */
+const C={
+ be:{name:'Backend-разработка',prof:'Backend-разработчик',ico:'BE',bg:'#F3EDFF',f:'dev',lvl:'С нуля',weeks:12,d:'Язык (Java, Go, Python), алгоритмы, базы данных и свой сервис с API.',
+  desc:'Пишет серверную часть продуктов: бизнес-логику, работу с базами данных и API, которыми пользуются приложения и сайт.',
+  tasks:['Разрабатывает новые функции сервисов','Проектирует API и схемы баз данных','Пишет тесты и проводит код-ревью','Следит за скоростью и надёжностью сервиса'],
+  tools:['Java / Kotlin / Go / Python','PostgreSQL','Git','Docker','Kafka'],
+  skills:['Язык','Алгоритмы','Git и тесты','SQL','API','Docker'],
+  where:['Стажировка Т-Старт: Backend (Java, Go, Python, Scala, .NET, C++)','Т-Академия: направление Backend'],
+  steps:[['Основы языка',['Переменные и типы','Условия и циклы','Функции и коллекции']],['Алгоритмы',['Сложность алгоритмов','Сортировки и поиск','Стек, очередь, хеш-таблица']],['Git и чистый код',['Git: коммиты и ветки','ООП: классы и интерфейсы','Тесты для своего кода']],['Базы данных',['Схема и SQL-запросы','Индексы','Транзакции']],['HTTP и API',['Как работает HTTP','REST API','Авторизация']],['Docker и проект',['Linux и Docker для разработчика','Деплой сервиса','Мини-проект: сервис с API']]]},
+ fe:{name:'Frontend-разработка',prof:'Frontend-разработчик',ico:'FE',bg:'#E5F6FF',f:'dev',lvl:'С нуля',weeks:12,d:'HTML, CSS, JavaScript, React и TypeScript.',
+  desc:'Делает интерфейсы, с которыми работают пользователи: интернет-банк, личные кабинеты, внутренние инструменты.',
+  tasks:['Верстает экраны по макетам дизайнеров','Подключает интерфейс к API','Следит за скоростью и доступностью страниц','Пишет тесты интерфейса'],
+  tools:['TypeScript','React','HTML и CSS','Git','DevTools браузера'],
+  skills:['HTML/CSS','JavaScript','Инструменты','React','API','Адаптивность'],
+  where:['Стажировка Т-Старт: Frontend','Т-Академия: направление Frontend'],
+  steps:[['HTML и CSS',['Структура страницы','Стили и блочная модель','Flexbox и Grid']],['JavaScript',['Переменные и функции','DOM и события','Асинхронность и fetch']],['Инструменты',['Git и npm','TypeScript: основы','Отладка в браузере']],['React',['Компоненты и props','Состояние и хуки','Роутинг']],['Работа с API',['Запросы к серверу','Формы и валидация','Обработка ошибок']],['Проект',['Адаптивная вёрстка','Тесты интерфейса','Мини-проект: своё веб-приложение']]]},
+ an:{name:'Android-разработка',prof:'Android-разработчик',ico:'AN',bg:'#EAF7EE',f:'mob',lvl:'С нуля',weeks:12,d:'Kotlin, Android SDK, Jetpack Compose и работа с сетью.',
+  desc:'Создаёт мобильные приложения для Android: экраны, логику, работу с сетью и данными на устройстве.',
+  tasks:['Разрабатывает экраны и функции приложения','Работает с сетью и локальными данными','Следит за стабильностью и скоростью приложения','Участвует в релизах в магазин приложений'],
+  tools:['Kotlin','Android Studio','Jetpack Compose','Git','Gradle'],
+  skills:['Kotlin','ООП','Android SDK','Compose','Сеть','Архитектура'],
+  where:['Стажировка Т-Старт: Android','Т-Академия: направление Android'],
+  steps:[['Основы Kotlin',['Переменные и функции','Коллекции','Null-безопасность']],['ООП в Kotlin',['Классы и объекты','Интерфейсы и наследование','Корутины: введение']],['Android SDK',['Activity и жизненный цикл','Ресурсы и разметка','Навигация']],['Jetpack Compose',['Composable-функции','Состояние в Compose','Списки и темы']],['Сеть и данные',['Запросы к API','Хранение данных','Архитектура MVVM']],['Проект',['Тестирование приложения','Сборка и публикация','Мини-проект: своё приложение']]]},
+ ios:{name:'iOS-разработка',prof:'iOS-разработчик',ico:'iOS',bg:'#F0F1F3',f:'mob',lvl:'С нуля',weeks:12,d:'Swift, SwiftUI, архитектура и работа с сетью.',
+  desc:'Создаёт мобильные приложения для iPhone: интерфейсы, логику и работу с сетью.',
+  tasks:['Разрабатывает экраны и функции приложения','Работает с сетью и данными на устройстве','Следит за плавностью интерфейса','Участвует в релизах в магазин приложений'],
+  tools:['Swift','Xcode','SwiftUI','Git','Instruments'],
+  skills:['Swift','ООП','SwiftUI','Архитектура','Сеть','Тесты'],
+  where:['Стажировка Т-Старт: iOS'],
+  steps:[['Основы Swift',['Переменные и типы','Функции и замыкания','Опционалы']],['ООП и протоколы',['Классы и структуры','Протоколы','Управление памятью (ARC)']],['SwiftUI',['Первые экраны','Состояние и данные','Списки и навигация']],['Архитектура',['MVVM','Разделение слоёв','Зависимости']],['Сеть и данные',['Запросы к API','Хранение данных','Асинхронность']],['Проект',['Тестирование приложения','Сборка и публикация','Мини-проект: своё приложение']]]},
+ qa:{name:'Тестирование (QA)',prof:'QA-инженер',ico:'QA',bg:'#FFEDE5',f:'qa',lvl:'С нуля',weeks:8,d:'Тест-дизайн, баг-репорты, API и автотесты.',
+  desc:'Отвечает за качество продукта: проверяет приложения и сервисы, ищет ошибки в коде и логике и сопровождает релизы.',
+  tasks:['Тестирует функции по требованиям','Пишет тест-кейсы и баг-репорты','Проводит интеграционное и регрессионное тестирование','Пишет автотесты'],
+  tools:['Postman','Swagger','Charles или Fiddler','DevTools','Python / Kotlin'],
+  skills:['Тест-дизайн','Баг-репорты','SQL','API','Автотесты','CI'],
+  where:['Стажировка Т-Старт: QA-инженер','Т-Академия: QA (Backend, Mobile)'],
+  steps:[['Основы тестирования',['Зачем нужно тестирование','Виды тестирования','Жизненный цикл бага']],['Тест-дизайн',['Классы эквивалентности','Граничные значения','Тест-кейсы и чек-листы']],['Инструменты',['Баг-трекер','DevTools и сниффер трафика','SQL для тестировщика']],['Тестирование API',['Как устроено API','Postman','Тестирование REST']],['Автотесты',['Основы программирования','Фреймворк для автотестов','Автотесты для API']],['Процессы',['Тестирование в CI','Регресс и релиз','Мини-проект: тест-план продукта']]]},
+ ml:{name:'Машинное обучение',prof:'ML-инженер',ico:'ML',bg:'#FFDD2D',f:'data',lvl:'Средний',weeks:14,d:'Математика, Python, классический ML, нейросети и ML в продакшене.',
+  desc:'Строит модели машинного обучения — рекомендации, скоринг, обработку текстов — и доводит их до работы в продукте.',
+  tasks:['Готовит данные и признаки','Обучает и сравнивает модели','Выкатывает модели в продакшен','Следит за качеством моделей после запуска'],
+  tools:['Python','NumPy и pandas','scikit-learn','PyTorch','MLflow'],
+  skills:['Математика','Python','Классический ML','Метрики','Нейросети','ML в проде'],
+  where:['Стажировка Т-Старт: ML-инженер'],
+  steps:[['Python и математика',['Что делает ML-инженер','Python и NumPy','Линейная алгебра и вероятность']],['Классический ML',['Регрессия','Классификация','Деревья и ансамбли']],['Оценка моделей',['Метрики качества','Кросс-валидация','Переобучение']],['Нейросети',['Как устроен нейрон','Обучение нейросети','Тексты и изображения']],['Эксперименты',['Зачем трекать эксперименты','MLflow Tracking на практике','Model Registry: версии моделей']],['ML в продакшене',['Модель как сервис','Мониторинг и дрейф данных','Мини-проект: свой ML-сервис']]]},
+ da:{name:'Аналитика',prof:'Аналитик',ico:'DA',bg:'#E8F1FF',f:'data',lvl:'С нуля',weeks:10,d:'Таблицы, статистика, SQL, Python и A/B-тесты.',
+  desc:'Находит в данных ответы на вопросы бизнеса: считает метрики продукта, проверяет гипотезы и помогает принимать решения.',
+  tasks:['Пишет SQL-запросы к данным продукта','Строит дашборды и отчёты','Проектирует и считает A/B-тесты','Формулирует выводы для команды'],
+  tools:['SQL','Python и pandas','BI-инструменты','Excel / Google Таблицы','Jupyter'],
+  skills:['Таблицы','Статистика','SQL','Python','Визуализация','A/B-тесты'],
+  where:['Стажировка Т-Старт: аналитик','Т-Академия: продуктовая аналитика'],
+  steps:[['Таблицы и первый анализ',['Формулы и функции','Сводные таблицы','Фильтры и сортировки']],['Статистика',['Среднее и медиана','Распределения и выбросы','Корреляция — не причинность']],['SQL',['SELECT и WHERE','JOIN и GROUP BY','Оконные функции']],['Python для анализа',['Основы Python','pandas: загрузка и очистка','Группировки в pandas']],['Визуализация',['Какой график выбрать','Дашборд за вечер','Как рассказать про цифры']],['Продуктовые метрики и A/B',['Метрики и воронки','A/B-тест: гипотеза и дизайн','Мини-проект: исследование датасета']]]},
+ sa:{name:'Системный анализ',prof:'Системный аналитик',ico:'SA',bg:'#FFF4BF',f:'data',lvl:'С нуля',weeks:9,d:'Требования, моделирование, SQL и интеграции.',
+  desc:'Переводит задачи бизнеса на язык требований для разработки и проектирует, как системы обмениваются данными.',
+  tasks:['Собирает и описывает требования','Рисует схемы процессов и интеграций','Пишет спецификации для разработчиков','Проверяет, что сделано то, что нужно'],
+  tools:['BPMN и UML','SQL','Swagger / OpenAPI','Confluence','Jira'],
+  skills:['Требования','Моделирование','SQL','API','Документация','Коммуникация'],
+  where:['Стажировка Т-Старт: ИТ-аналитик','Т-Академия: системный анализ'],
+  steps:[['Роль аналитика',['Кто такой системный аналитик','Жизненный цикл продукта','Работа с заказчиком']],['Требования',['Виды требований','User stories и критерии приёмки','Use case']],['Моделирование',['BPMN','UML: диаграмма последовательности','ER-диаграммы']],['Данные',['Основы SQL','Реляционные базы','Нормализация']],['Интеграции',['REST и JSON','Документирование API','Очереди сообщений']],['Проект',['Спецификация фичи','Презентация решения','Мини-проект: ТЗ на сервис']]]},
+ sre:{name:'SRE и инфраструктура',prof:'SRE-инженер',ico:'SRE',bg:'#E8F1FF',f:'ops',lvl:'Средний',weeks:12,d:'Linux, сети, CI/CD, контейнеры, Kubernetes и мониторинг.',
+  desc:'Отвечает за бесперебойную работу высоконагруженных сервисов: автоматизирует инфраструктуру, выкладки и мониторинг.',
+  tasks:['Автоматизирует сборки и выкладки','Настраивает мониторинг и алерты','Разбирает инциденты и предотвращает повторы','Планирует нагрузку на сервисы'],
+  tools:['Linux','Docker','Kubernetes','Prometheus и Grafana','Terraform / Ansible'],
+  skills:['Linux','Сети','Git и CI','Docker','Kubernetes','Мониторинг'],
+  where:['Стажировка Т-Старт: SRE'],
+  steps:[['Linux',['Файловая система и права','Процессы и сервисы','Bash-скрипты']],['Сети',['Как устроен интернет','HTTP и DNS','SSH и безопасность']],['Git и CI',['Git для команды','Что такое CI','Первый пайплайн сборки']],['Docker',['Образы и контейнеры','Dockerfile','docker-compose']],['Kubernetes',['Зачем нужен Kubernetes','Pod, Deployment, Service','Выкатка без простоя']],['Мониторинг и надёжность',['Метрики и логи','Алерты и инциденты','Мини-проект: свой CI/CD']]]},
+};
+const KEYS=Object.keys(C);
+const GLOSS={
+ be:[['Тип данных','Что хранится в переменной: число, строка, список.'],['Сложность O(n)','Как растёт время работы алгоритма с ростом данных.'],['Коммит','Сохранённое изменение кода в истории Git.'],['Индекс','Структура в базе данных, которая ускоряет поиск.'],['REST','Подход к API: ресурсы по адресам и стандартные HTTP-методы.'],['Контейнер','Изолированная среда с сервисом и его зависимостями.']],
+ fe:[['Тег','Элемент разметки HTML, например заголовок или кнопка.'],['DOM','Дерево элементов страницы, которым управляет JavaScript.'],['Типизация','Описание типов данных, чтобы ловить ошибки до запуска.'],['Компонент','Переиспользуемая часть интерфейса в React.'],['API-запрос','Обращение интерфейса к серверу за данными.'],['Адаптивность','Страница удобно выглядит на любом экране.']],
+ an:[['Null-безопасность','Защита от ошибок, когда значения нет.'],['Корутина','Лёгкий способ выполнять задачи асинхронно.'],['Activity','Экран Android-приложения со своим жизненным циклом.'],['Composable','Функция, которая описывает часть интерфейса в Compose.'],['MVVM','Архитектура, где экран отделён от логики и данных.'],['Релиз','Выпуск новой версии приложения в магазин.']],
+ ios:[['Опционал','Тип, который может хранить значение или его отсутствие.'],['Протокол','Набор требований, которые должен выполнить тип.'],['View','Элемент интерфейса в SwiftUI.'],['MVVM','Архитектура, где экран отделён от логики и данных.'],['async/await','Синтаксис для асинхронного кода.'],['Релиз','Выпуск новой версии приложения в магазин.']],
+ qa:[['Баг-репорт','Описание ошибки: шаги, ожидаемый и фактический результат.'],['Класс эквивалентности','Группа входных данных, на которых система ведёт себя одинаково.'],['Сниффер','Инструмент, который показывает сетевые запросы приложения.'],['Эндпоинт','Адрес в API, который выполняет конкретное действие.'],['Автотест','Проверка, которую выполняет код, а не человек.'],['Регресс','Проверка, что новые изменения не сломали старое.']],
+ ml:[['Вектор','Упорядоченный набор чисел — так модель видит объект.'],['Признак','Характеристика объекта, по которой модель учится.'],['Переобучение','Модель запомнила обучающие данные и плохо работает на новых.'],['Нейрон','Элемент нейросети: взвешенная сумма и функция активации.'],['Эксперимент','Один запуск обучения с конкретными параметрами и результатом.'],['Дрейф данных','Когда данные в проде со временем начинают отличаться от обучающих.']],
+ da:[['Сводная таблица','Таблица, которая группирует и считает данные по выбранным полям.'],['Медиана','Значение посередине упорядоченного ряда — устойчива к выбросам.'],['SQL-запрос','Команда, которая достаёт и считает данные из базы.'],['DataFrame','Таблица в pandas: строки, столбцы и операции над ними.'],['Дашборд','Набор графиков, по которым видно состояние продукта.'],['A/B-тест','Эксперимент, где две группы видят разные версии и сравниваются по метрике.']],
+ sa:[['Требование','Что система должна уметь или каким условиям соответствовать.'],['User story','Короткое описание потребности: кто, что хочет и зачем.'],['BPMN','Нотация для схем бизнес-процессов.'],['Сущность','Объект предметной области, о котором хранятся данные.'],['API','Договорённость, как системы обмениваются данными.'],['Спецификация','Документ, по которому разработка делает фичу.']],
+ sre:[['Права доступа','Кто может читать, менять и запускать файл.'],['DNS','Система, которая превращает имя сайта в IP-адрес.'],['CI','Автоматическая сборка и проверка кода при каждом изменении.'],['Образ','Шаблон, из которого запускаются контейнеры.'],['Pod','Минимальная единица запуска в Kubernetes.'],['Алерт','Автоматическое оповещение, когда метрика выходит за норму.']],
+};
+const REAL={
+ 'Что делает ML-инженер':{d:'Первое занятие курса: разберёмся, чем ML-инженер отличается от аналитика и разработчика и какой путь тебя ждёт.',
+  steps:[['Задачи ML-инженера','ML-инженер строит модели, которые предсказывают и рекомендуют: что показать пользователю, какую операцию проверить, как понять текст обращения.','Но модель мало обучить — её нужно довести до продукта и следить за качеством.'],
+   ['Жизненный цикл модели','Данные → признаки → обучение → оценка → выкладка → мониторинг → снова данные.','Модель не «готова навсегда»: когда мир меняется, её качество падает, и цикл запускается заново.'],
+   ['Путь по курсу','Сначала Python и математика, затем классический ML и оценка моделей, потом нейросети.','В конце — эксперименты и вывод модели в продакшен с мини-проектом.']],
+  quiz:[['Что входит в работу ML-инженера?',['Обучение моделей и вывод их в продукт','Дизайн интерфейсов','Ведение бухгалтерии'],0],['Что происходит после выкладки модели?',['Модель больше не меняется','Мониторинг качества','Удаление обучающих данных'],1],['С чего начинается курс?',['С нейросетей','С продакшена','С Python и математики'],2]]},
+ 'Зачем трекать эксперименты':{d:'Посмотрим, почему таблица в Excel перестаёт работать уже на десятом эксперименте.',
+  steps:[['Параметры и метрики','Каждый запуск обучения — это набор параметров (скорость обучения, глубина дерева) и результат (accuracy, F1).','Без записи уже через неделю не вспомнить, какой запуск дал лучший результат и почему.'],
+   ['Воспроизводимость','Чтобы повторить результат, нужны та же версия кода, данных и параметров.','Трекинг сохраняет всё это вместе с метриками — коллега сможет получить ту же модель.'],
+   ['Обзор MLflow','MLflow записывает параметры, метрики и файлы каждого запуска и показывает их в веб-интерфейсе.','Там запуски удобно сравнивать и выбирать лучший.']],
+  quiz:[['Что фиксирует трекинг экспериментов?',['Параметры, метрики и артефакты','Только итоговую модель','Время работы ноутбука'],0],['Что нужно, чтобы повторить результат?',['Та же видеокарта','Те же код, данные и параметры','Ничего не нужно'],1],['Где удобно сравнивать запуски?',['В Dockerfile','В терминале','В интерфейсе MLflow'],2]]}
+};
+/* ========================= АКТИВНОСТИ ========================= */
+const EVENTS=[
+ {id:1,d:'2026-10-29',time:'10:00',t:'Хакатон для первокурсников',type:'Хакатон',fmt:'офлайн',m:'24 часа, команды по 3–4 человека, задачи от инженеров.',p:[]},
+ {id:2,d:'2026-11-05',time:'19:00',t:'Вебинар: как проходит отбор на стажировку',type:'Вебинар',fmt:'онлайн',m:'Этапы отбора, тестовые задания и типичные ошибки кандидатов.',p:[]},
+ {id:3,d:'2026-11-06',time:'19:00',t:'Один день из жизни backend-разработчика',type:'Вебинар',fmt:'онлайн',m:'Инженеры показывают, как устроена их работа.',p:['be']},
+ {id:4,d:'2026-11-10',time:'18:30',t:'Разбор: как устроены рекомендательные системы',type:'Вебинар',fmt:'онлайн',m:'Живой разбор с ML-инженером.',p:['ml']},
+ {id:5,d:'2026-11-12',time:'18:00',t:'SQL-воркшоп: от SELECT до оконных функций',type:'Вебинар',fmt:'онлайн',m:'Практика на открытых данных.',p:['da','sa']},
+ {id:6,d:'2026-11-14',time:'12:00',t:'Мобильная разработка: Android и iOS',type:'Лекция',fmt:'офлайн и трансляция',m:'Чем отличаются платформы и с чего начать.',p:['an','ios']},
+ {id:7,d:'2026-11-17',time:'19:00',t:'Тестирование API на практике',type:'Вебинар',fmt:'онлайн',m:'Postman, тест-кейсы и типичные баги.',p:['qa']},
+ {id:8,d:'2026-11-19',time:'18:30',t:'Открытая лекция Т-Образования',type:'Лекция',fmt:'офлайн и трансляция',m:'Как выбрать направление в IT на первых курсах.',p:[]},
+ {id:9,d:'2026-11-21',time:'12:00',t:'Frontend-интенсив за один день',type:'Хакатон',fmt:'онлайн',m:'Соберём интерфейс на React с нуля.',p:['fe']},
+ {id:10,d:'2026-11-24',time:'19:00',t:'Как работает SRE в большой компании',type:'Вебинар',fmt:'онлайн',m:'Инциденты, мониторинг и надёжность.',p:['sre']},
+ {id:11,d:'2026-11-26',time:'18:30',t:'Встреча с системными аналитиками',type:'Лекция',fmt:'офлайн',m:'Как пишут требования в продуктовых командах.',p:['sa']},
+ {id:12,d:'2026-12-03',time:'19:00',t:'Мастер-класс: резюме для стажировки',type:'Вебинар',fmt:'онлайн',m:'Соберём резюме студента без опыта работы.',p:[]},
+ {id:13,d:'2026-12-12',time:'11:00',t:'Хакатон по анализу данных',type:'Хакатон',fmt:'офлайн',m:'Задачи на открытых датасетах.',p:['da','ml']},
+];
+const INTERNS=[
+ {k:'be',t:'Т-Старт: Backend-разработчик',m:'Java, Go, Python и другие языки · от 20 часов в неделю',open:true},
+ {k:'fe',t:'Т-Старт: Frontend-разработчик',m:'React и TypeScript · от 20 часов в неделю',open:true},
+ {k:'an',t:'Т-Старт: Android-разработчик',m:'Kotlin · от 20 часов в неделю',open:true},
+ {k:'ios',t:'Т-Старт: iOS-разработчик',m:'Swift · от 20 часов в неделю',open:true},
+ {k:'qa',t:'Т-Старт: QA-инженер',m:'Функциональное и автоматизированное тестирование · 20–40 часов в неделю',open:true},
+ {k:'ml',t:'Т-Старт: ML-инженер',m:'Машинное обучение в продуктах · от 20 часов в неделю',open:true},
+ {k:'da',t:'Т-Старт: аналитик',m:'Продуктовая аналитика · от 20 часов в неделю',open:true},
+ {k:'sa',t:'Т-Старт: ИТ-аналитик',m:'Системный анализ · от 20 часов в неделю',open:true},
+ {k:'sre',t:'Т-Старт: SRE-инженер',m:'Надёжность высоконагруженных сервисов · от 20 часов в неделю',open:false},
+];
+const OTHER=[
+ {t:'Т-Академия',tag:'Для студентов IT',m:'Бесплатная углублённая программа: разработка (Backend, Frontend, Android), продуктовая аналитика, системный анализ и QA. Длится от шести месяцев до полутора лет, оценки учитываются в дипломе.',p:['be','fe','an','da','sa','qa']},
+ {t:'Интенсивы Т-Образования',tag:'Летом и зимой',m:'Короткие интенсивные курсы для студентов и джунов в каникулы. Нагрузка от 20 часов в неделю, лучших приглашают на интервью в команду.',p:[]},
+ {t:'Т-Поколение',tag:'От полугода до 1,5 лет',m:'Курсы для студентов и выпускников технических вузов: аналитика, разработка и другие направления.',p:[]},
+ {t:'ИТ-курсы для начинающих',tag:'С нуля',m:'Бесплатные онлайн-курсы с видеоуроками от специалистов Т-Банка. Сертификат — за 75% выполненных заданий.',p:[]},
+ {t:'Стипендия Т-Образования',tag:'Для студентов',m:'Поддержка сильных студентов. Условия и сроки — на сайте Т-Образования.',p:[]},
+ {t:'Смены в Сириусе',tag:'Выездная программа',m:'Образовательные смены для студентов в Сочи.',p:[]},
+ {t:'Магистратура МФТИ',tag:'После бакалавриата',m:'Можно совмещать учёбу в техническом вузе с работой в команде Т-Банка.',p:['be','ml','da']},
+ {t:'Talents at T-Bank',tag:'Для молодых специалистов',m:'Программа развития, которая помогает вырасти от джуна до уверенного мидла за 1,5 года.',p:[]},
+];
+
+const $=(q,el=document)=>el.querySelector(q), $$=(q,el=document)=>[...el.querySelectorAll(q)];
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2400)}
+const pl=(n,a,b,c)=>{n=Math.abs(n)%100;const n1=n%10;return n>10&&n<20?c:n1>1&&n1<5?b:n1===1?a:c};
+function lessons(k){const out=[];C[k].steps.forEach((st,si)=>st[1].forEach((t,li)=>out.push({si,li,t,idx:out.length})));return out}
+const total=k=>lessons(k).length;
+function ring(p,sz=84){const r=34,c=2*Math.PI*r;return `<svg width="${sz}" height="${sz}" viewBox="0 0 84 84"><circle cx="42" cy="42" r="${r}" fill="none" stroke="#E6E8EB" stroke-width="8"/><circle cx="42" cy="42" r="${r}" fill="none" stroke="${p>=70?'#FFDD2D':'#C9CDD2'}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${c*p/100} ${c}" transform="rotate(-90 42 42)"/><text x="42" y="48" text-anchor="middle" font-size="18" font-weight="700" fill="#1A1A1A">${p}%</text></svg>`}
+
+/* ========================= СОСТОЯНИЕ ========================= */
+let ST=null;
+const LS='tnav-proto-accounts';
+let DB={accounts:{},cur:null};
+function hashPw(p){let h=5381;for(const ch of p)h=((h<<5)+h+ch.charCodeAt(0))|0;return 'h'+(h>>>0).toString(36)}
+function saveDB(){try{localStorage.setItem(LS,JSON.stringify(DB))}catch(e){}}
+function loadDB(){try{const x=JSON.parse(localStorage.getItem(LS));if(x&&x.accounts)DB=x}catch(e){}}
+function save(){if(!ST)return;const a=DB.accounts[ST.user.email];if(a){a.state=ST;saveDB()}}
+function load(){loadDB();const a=DB.cur&&DB.accounts[DB.cur];return a?a.state:null}
+const done=k=>new Set((ST.courses[k]||[]));
+const pct=k=>Math.round(done(k).size/total(k)*100);
+const firstUndone=k=>{const d=done(k);const f=lessons(k).find(l=>!d.has(l.idx));return f?f.idx:-1};
+const stepDone=(k,si)=>{const d=done(k);return lessons(k).filter(l=>l.si===si).every(l=>d.has(l.idx))};
+const curStep=k=>{const f=firstUndone(k);return f<0?C[k].steps.length-1:lessons(k)[f].si};
+const perLesson=k=>(100/total(k)).toFixed(1).replace('.',',');
+const myProfs=()=>Object.keys(ST.courses);
+function enroll(k){if(!ST.courses[k]){ST.courses[k]=[];save();return true}return false}
+function notify(t,go){if(!ST)return;ST.notifs.unshift({t,go,at:Date.now(),read:false});ST.notifs=ST.notifs.slice(0,30);save();renderBell();if(ST.mail&&ST.user.email)ST.mailLog=(ST.mailLog||0)+1}
+
+/* ========================= НАВИГАЦИЯ ========================= */
+const NAVOF={s1:'s1',s2:'s1',s3:'s1',s9:'s1',s4:'s4',s5:'s5',s6:'act',s7:'act',s11:'act',s8:'s8'};
+const RENDER={s1:renderHome,s2:renderCourse,s4:renderCat,s5:renderAtlas,s6:renderEvents,s7:renderInterns,s11:renderOther,s8:renderProfile};
+function show(id){$$('.screen').forEach(x=>x.classList.toggle('active',x.id===id));document.body.classList.toggle('notest',id[0]==='t');renderAcct();window.scrollTo(0,0);closePanels()}
+function go(id){
+  if(id==='act')id='s6';
+  if(id[0]==='s'&&!ST){show('t1');return toast('Сначала пройди тест — платформа откроется после него')}
+  if(RENDER[id])RENDER[id]();
+  show(id);$$('.nav span,.tabbar a').forEach(n=>n.classList.toggle('on',n.dataset.nav===NAVOF[id]));
+  $$('.acttabs span').forEach(t=>t.classList.toggle('on',t.dataset.go===id));
+  if(ST)$$('.ava').forEach(a=>a.textContent=ST.user.name[0].toUpperCase());
+}
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');if(g){e.preventDefault();go(g.dataset.go);return}
+  const n=e.target.closest('[data-nav]');if(n){e.preventDefault();go(n.dataset.nav);return}
+  const pr=e.target.closest('[data-prof]');if(pr){e.preventDefault();e.stopPropagation();openProf(pr.dataset.prof);return}
+  if(e.target.closest('.top .logo')){goHome();return}
+  if(e.target.closest('.loginBtn')){openAuth();return}
+  if(e.target.closest('.ava')){e.stopPropagation();toggleAcct();return}
+  if(e.target.closest('.bell')){e.stopPropagation();toggleBell();return}
+  if(!e.target.closest('#notifPanel,#acctMenu'))closePanels();
+});
+function closePanels(){$('#notifPanel').classList.remove('on');$('#acctMenu').classList.remove('on')}
+
+/* ========================= УВЕДОМЛЕНИЯ ========================= */
+function ago(t){const m=Math.round((Date.now()-t)/60000);return m<1?'только что':m<60?m+' мин назад':Math.round(m/60)+' ч назад'}
+function renderBell(){
+  const n=ST&&ST.lk?ST.notifs.filter(x=>!x.read).length:0;
+  $$('.bell .badge').forEach(b=>{b.textContent=n>9?'9+':n;b.style.display=n?'grid':'none'});
+  $$('.bell').forEach(b=>b.style.display=ST?'grid':'none');
+  if(!ST)return;
+  $('#npList').innerHTML=!ST.lk?'<div class="np-empty">Уведомления в личном кабинете выключены. Включить можно в профиле.</div>':
+    ST.notifs.length?ST.notifs.map((x,i)=>`<div class="np-item${x.read?'':' new'}" data-i="${i}"><i></i><div><div class="t">${x.t}</div><div class="m">${ago(x.at)}</div></div></div>`).join(''):'<div class="np-empty">Пока уведомлений нет</div>';
+  $('#npMail').textContent=ST.mail?(ST.user.email?`Копии важных уведомлений уходят на ${ST.user.email} · ${ST.freq.toLowerCase()}`:'Почта не указана — добавь её в профиле'):'Уведомления по почте выключены';
+  $$('#npList .np-item').forEach(el=>el.onclick=()=>{const x=ST.notifs[+el.dataset.i];x.read=true;save();renderBell();if(x.go)go(x.go)});
+}
+function toggleBell(){const p=$('#notifPanel');p.classList.toggle('on');if(p.classList.contains('on'))renderBell()}
+$('#npAll').onclick=()=>{ST.notifs.forEach(x=>x.read=true);save();renderBell()};
+$('#npSet').onclick=()=>{go('s8');setTimeout(()=>$('#notifSettings').scrollIntoView({behavior:'smooth',block:'center'}),80)};
+
+/* ========================= ПРОФТЕСТ ========================= */
+const TQ_EXP=[
+ ['Что тебе интереснее всего делать?',[['Искать закономерности в цифрах',{da:2,ml:2},'любишь искать закономерности в данных'],['Писать код, который работает «под капотом»',{be:2,sre:1},'любишь серверную логику'],['Делать то, что видит пользователь',{fe:2,an:2,ios:2},'хочешь видеть результат своей работы'],['Настраивать системы, чтобы всё работало стабильно',{sre:3,qa:1},'ценишь стабильную работу систем']]],
+ ['Какой предмет даётся тебе легче всего?',[['Математика и статистика',{ml:2,da:2},'хорошо знаешь математику'],['Информатика и программирование',{be:2,fe:1,an:1,ios:1},'уже программируешь'],['Физика и техника',{sre:2,be:1},'мыслишь как инженер'],['Гуманитарные предметы',{sa:2,qa:1},'умеешь чётко формулировать мысли']]],
+ ['Как ты обычно берёшься за новую задачу?',[['Сначала разбираюсь в данных',{da:2,ml:1},'начинаешь с данных'],['Быстро пишу прототип и пробую',{fe:2,an:1,ios:1},'любишь быстро пробовать'],['Ищу, где всё может сломаться',{qa:2,sre:1},'замечаешь слабые места'],['Расписываю требования и план',{sa:2,qa:1},'любишь порядок и план']]],
+ ['Какая новость обрадует тебя больше?',[['«Модель стала точнее на 5%»',{ml:3},'радуешься росту качества моделей'],['«Сервис выдержал пиковую нагрузку»',{sre:2,be:2},'ценишь надёжность'],['«Пользователям понравилось новое приложение»',{an:2,ios:2,fe:1},'думаешь о пользователях'],['«Нашли баг до релиза»',{qa:3},'ценишь качество']]],
+ ['Какой формат работы тебе ближе?',[['Общаться с людьми и собирать требования',{sa:3,da:1},'любишь общаться'],['Глубоко погружаться в одну сложную задачу',{ml:2,be:1},'любишь глубоко погружаться'],['Много разных задач и автоматизация',{sre:2,qa:1},'любишь автоматизировать'],['Видимый результат каждый день',{fe:2,an:1,ios:1},'ценишь видимый результат']]],
+ ['Каким устройством ты пользуешься чаще всего?',[['Смартфон на Android',{an:2},'пользуешься Android'],['iPhone',{ios:2},'пользуешься iPhone'],['Ноутбук — почти всё делаю на нём',{be:1,fe:1,da:1,sa:1},''],['Люблю разбираться в настройках и терминале',{sre:2,be:1},'не боишься терминала']]],
+ ['Что хочешь освоить первым?',[['SQL и Python для анализа',{da:3},'хочешь освоить SQL'],['Машинное обучение',{ml:3},'интересуешься машинным обучением'],['Язык программирования и алгоритмы',{be:2,an:1,ios:1},'хочешь освоить программирование'],['Docker, облака и CI/CD',{sre:3},'хочешь разобраться в инфраструктуре']]],
+ ['Сколько часов в неделю готов(а) учиться?',[['До 3 часов',{},''],['3–6 часов',{},''],['6–10 часов',{},''],['Больше 10 часов',{},'']]],
+];
+const TQ_EXTRA=[
+ ['Что тебе интереснее разобрать?',[['Как приложение работает на телефоне',{an:2,ios:2},'интересуешься мобильными приложениями'],['Почему сайт открывается быстро или медленно',{fe:2,sre:1},'замечаешь скорость интерфейсов'],['Как банк понимает, что операция подозрительная',{ml:2,da:1},'интересуешься умными системами'],['Как разные системы обмениваются данными',{sa:2,be:1},'думаешь о том, как устроены системы']]],
+ ['В командном проекте ты скорее…',[['Пишешь основную логику',{be:2},'берёшь на себя основную логику'],['Делаешь интерфейс и презентацию',{fe:2},'отвечаешь за то, что видят люди'],['Проверяешь, что всё работает',{qa:2},'проверяешь работу команды'],['Договариваешься и распределяешь задачи',{sa:2},'связываешь людей и задачи']]],
+ ['Что тебе ближе?',[['Строгая логика и доказательства',{ml:1,be:1,da:1},''],['Эксперименты и проверка гипотез',{da:2,ml:1},'любишь проверять гипотезы'],['Порядок и документация',{sa:2,qa:1},'ценишь порядок'],['Удобство и внешний вид',{fe:2,ios:1,an:1},'ценишь удобство']]],
+ ['Какой учебный проект ты бы выбрал(а)?',[['Чат-бот, который отвечает на вопросы',{ml:2,be:1},'хочешь делать умных ботов'],['Мобильное приложение с расписанием',{an:2,ios:2},'хочешь сделать своё приложение'],['Дашборд с аналитикой успеваемости',{da:3},'любишь дашборды'],['Сервер, который выдержит весь вуз',{sre:2,be:1},'хочешь строить надёжные системы']]],
+ ['Как ты относишься к повторяющимся задачам?',[['Люблю их автоматизировать',{sre:2,qa:1},'любишь автоматизировать'],['Нормально, если это нужно для качества',{qa:2},'терпелив(а) к проверкам'],['Избегаю, хочу новых задач',{ml:1,fe:1},''],['Люблю, когда всё по регламенту',{sa:2},'любишь регламенты']]],
+ ['Что важнее всего в продукте?',[['Чтобы им было удобно пользоваться',{fe:2,an:1,ios:1},'думаешь о пользователях'],['Чтобы он не падал',{sre:2,qa:1},'ценишь надёжность'],['Чтобы он был умным и персональным',{ml:2},'хочешь делать персональные продукты'],['Чтобы решения принимались на основе цифр',{da:2,sa:1},'принимаешь решения по цифрам']]],
+ ['Ты нашёл(ла) ошибку в чужом коде. Что сделаешь?',[['Опишу шаги, как её воспроизвести',{qa:3},'умеешь описывать ошибки'],['Сразу исправлю',{be:2,fe:1},'любишь чинить код'],['Разберусь, почему так вышло в процессе',{sa:1,sre:1},''],['Посмотрю логи и метрики',{sre:2,da:1},'ищешь причину в логах']]],
+ ['Насколько тебе нравится математика?',[['Очень, люблю сложные задачи',{ml:3},'любишь сложную математику'],['Нравятся статистика и вероятности',{da:2,ml:1},'любишь статистику'],['Нормально, на уровне школы',{be:1,fe:1,qa:1},''],['Не очень',{sa:1,fe:1,qa:1},'']]],
+ ['Что ты делаешь, когда открываешь новое приложение?',[['Ищу, где оно ломается',{qa:2},'ищешь, где ломается'],['Оцениваю дизайн и анимации',{fe:1,ios:2,an:1},'замечаешь детали интерфейса'],['Думаю, как оно устроено внутри',{be:2,sre:1},'интересуешься устройством систем'],['Думаю, какие данные оно собирает',{da:1,ml:1,sa:1},'']]],
+ ['Какой результат работы тебе приятнее?',[['Отчёт, который изменил решение',{da:3},'хочешь влиять на решения'],['Схема, по которой команда сделала фичу',{sa:3},'любишь проектировать'],['Фича, которой пользуются миллионы',{be:1,fe:1,an:1,ios:1},''],['Модель, которая угадывает лучше человека',{ml:3},'мечтаешь о точных моделях']]],
+ ['Как ты учишься лучше всего?',[['Решаю задачи и алгоритмы',{be:2,ml:1},'любишь алгоритмы'],['Делаю свой проект',{fe:1,an:1,ios:1},''],['Разбираю документацию и примеры',{sa:1,qa:1,sre:1},''],['Анализирую данные и графики',{da:2},'учишься на данных']]],
+ ['Что из этого ты уже пробовал(а)?',[['Писал(а) код на Python',{ml:1,da:1,be:1},''],['Делал(а) сайт',{fe:2},'уже делал(а) сайты'],['Писал(а) SQL-запросы',{da:2,sa:1},'знаком(а) с SQL'],['Пока ничего из этого',{qa:1,sa:1},'']]],
+ ['Что-то сломалось ночью. Как тебе такая работа?',[['Звучит как вызов',{sre:3},'не боишься инцидентов'],['Лучше предотвратить заранее',{qa:2,sre:1},'предотвращаешь проблемы'],['Предпочитаю спокойную работу',{da:1,sa:1,ml:1},''],['Готов(а), если это редко',{be:1,an:1,ios:1},'']]],
+ ['Какую задачу выберешь?',[['Ускорить загрузку страницы в 2 раза',{fe:2,be:1},'любишь быстрые интерфейсы'],['Найти, почему упали продажи',{da:3},'любишь искать причины в данных'],['Описать, как должна работать новая функция',{sa:3},'умеешь описывать требования'],['Сделать так, чтобы сервис выдержал в 10 раз больше людей',{sre:2,be:1},'думаешь о масштабе']]],
+ ['Что тебе важнее?',[['Видеть результат сразу',{fe:2,an:1,ios:1},'ценишь быстрый результат'],['Понимать, почему всё так',{ml:1,da:1,sa:1},''],['Чтобы всё было надёжно',{sre:1,qa:2},'ценишь надёжность'],['Писать красивый код',{be:2},'любишь чистый код']]],
+ ['Какие предметы в вузе нравятся больше?',[['Алгоритмы и структуры данных',{be:2,ml:1},'любишь алгоритмы'],['Теория вероятностей и статистика',{da:2,ml:2},'любишь теорию вероятностей'],['Базы данных и сети',{sre:1,be:1,sa:1},''],['Проектная работа',{fe:1,an:1,ios:1,sa:1},'']]],
+ ['Кем ты видишь себя через 3 года?',[['Инженером, которому доверяют сложные системы',{sre:2,be:1},'хочешь отвечать за сложные системы'],['Специалистом по данным и ИИ',{ml:2,da:1},'видишь себя в ИИ'],['Человеком между бизнесом и разработкой',{sa:2,da:1},'хочешь связывать бизнес и разработку'],['Создателем продуктов для людей',{fe:1,an:1,ios:1,qa:1},'']]],
+];
+const TQ_FULL=[...TQ_EXP.slice(0,7),...TQ_EXTRA,TQ_EXP[7]];
+let TQ=TQ_EXP;
+let TA=[],tqi=0,tKnow=false,RES=[],DRAFT=null;
+function renderTQ(){
+  const q=TQ[tqi];$('#tqNo').textContent=`Вопрос ${tqi+1} из ${TQ.length}`;$('#tqBar').style.width=(tqi/TQ.length*100)+'%';
+  $('#tqText').textContent=q[0];
+  $('#tqOpts').innerHTML=q[1].map((o,i)=>`<div class="topt${TA[tqi]===i?' sel':''}" data-i="${i}"><span class="k">${'АБВГ'[i]}</span>${o[0]}</div>`).join('');
+  $$('#tqOpts .topt').forEach(o=>o.onclick=()=>{TA[tqi]=+o.dataset.i;renderTQ();setTimeout(()=>{if(tqi<TQ.length-1){tqi++;renderTQ()}else finishTest()},250)});
+  $('#tqNext').disabled=TA[tqi]==null;$('#tqNext').textContent=tqi===TQ.length-1?'Готово →':'Далее →';
+  $('#tqBack').style.visibility=tqi?'visible':'hidden';
+}
+function startTest(full){TQ=full?TQ_FULL:TQ_EXP;TA=[];tqi=0;tKnow=false;show('t2');renderTQ()}
+function computeRes(){
+  const sc={},why={};KEYS.forEach(k=>{sc[k]=0;why[k]=[]});
+  TA.forEach((a,qi)=>{const o=TQ[qi][1][a];Object.entries(o[1]).forEach(([k,v])=>{sc[k]+=v;if(o[2]&&v>=2)why[k].push(o[2])})});
+  const max=Math.max(...Object.values(sc))||1;
+  return KEYS.map(k=>({k,p:Math.max(15,Math.min(96,Math.round(40+56*sc[k]/max))),why:[...new Set(why[k])]})).sort((a,b)=>b.p-a.p);
+}
+function finishTest(){$('#tqBar').style.width='100%';RES=computeRes();
+  if(ST){ST.res={};RES.forEach(r=>ST.res[r.k]=r.p);ST.testAt=Date.now();save();renderRes();setTimeout(()=>show('t4'),200);return}
+  renderTeaser();setTimeout(()=>show('t5'),200)}
+function whyLine(r){return r.why.length?`Ты ${r.why.slice(0,3).join(', ')}.`:''}
+function renderTeaser(){const r=RES[0],c=C[r.k];
+  $('#tzCard').innerHTML=`<div class="head"><div><div class="tag y">Совпадение ${r.p}%</div><div class="nm" style="margin-top:10px">${c.prof}</div></div><div class="match">${ring(r.p)}</div></div>
+   <div class="why">${c.desc}</div>${r.why.length?`<div class="why"><b>Почему подходит</b>${whyLine(r)}</div>`:''}
+   <a class="tz-more" data-prof="${r.k}">Подробнее о профессии и видео →</a>`;
+  $('#tzLocked').innerHTML=RES.slice(1,3).map(x=>`<div class="tz-blur"><div class="nm">${C[x.k].prof}</div><div class="m">Совпадение ${x.p}%</div></div>`).join('');
+}
+function renderRes(){
+  const list=tKnow?KEYS.map(k=>({k,p:ST&&ST.res[k]!=null?ST.res[k]:null,why:[]})):RES.slice(0,3);
+  const name=(ST?ST.user.name:DRAFT.name);
+  $('#tResH').textContent=tKnow?'Выбери профессию':`${name}, тебе подходят эти профессии`;
+  $('#tResSub').textContent=ST?'Результаты обновлены в твоём кабинете. Можно добавить новый курс или вернуться к обучению.':'Это полный результат. Выбери профессию — откроется платформа, и ты начнёшь путь обучения с первого шага.';
+  $('#tRes').className='tres'+(tKnow?' four':'');
+  $('#tRes').innerHTML=list.map((r,i)=>{const mine=ST&&ST.courses[r.k];return `<div class="card tcard${!tKnow&&i===0?' best':''}">
+    <div class="head"><div class="nm">${C[r.k].prof}</div>${r.p!=null?`<div class="match">${ring(r.p)}</div>`:''}</div>
+    <div class="why">${C[r.k].desc}</div>
+    ${r.why.length?`<div class="why"><b>Почему подходит</b>${whyLine(r)}</div>`:''}
+    ${tKnow?'':`<div class="why"><b>Первые шаги</b></div><ul>${C[r.k].steps.slice(0,3).map(s=>`<li>${s[0]}</li>`).join('')}</ul>`}
+    <a class="tz-more" data-prof="${r.k}">Подробнее о профессии</a>
+    <button class="btn ${!tKnow&&i===0?'y':'g'}" data-pick="${r.k}">${mine?'Перейти к курсу':'Начать обучение'}</button></div>`}).join('');
+  $$('#tRes [data-pick]').forEach(b=>b.onclick=()=>pickProf(b.dataset.pick));
+  $('#tResBack').style.display=ST?'inline':'none';
+}
+function pickProf(k){
+  if(!ST){const res={};RES.forEach(r=>res[r.k]=r.p);const pw=DRAFT.pass;delete DRAFT.pass;
+    ST={user:DRAFT,res,courses:{},active:k,final:{},place:{},reg:[],rem:[],notifs:[],lk:true,mail:true,freq:'2 раза в неделю',sub:true,testAt:RES.length?Date.now():null};
+    DB.accounts[DRAFT.email]={pass:hashPw(pw),state:ST};DB.cur=DRAFT.email;
+    ST.courses[k]=[];notify(`Добро пожаловать, ${DRAFT.name}! Курс «${C[k].name}» уже ждёт тебя`,'s2');
+    save();go('s1');toast(`Готово! Начинай с первого урока курса «${C[k].name}»`);return}
+  const isNew=enroll(k);ST.active=k;save();go('s2');if(isNew)toast(`Курс «${C[k].name}» добавлен`);
+}
+function tReset(){TA=[];tqi=0;tKnow=false;RES=[];$('#fErr').textContent='';show('t1')}
+$('#tExpress').onclick=()=>startTest(false);
+$('#tFull').onclick=()=>startTest(true);
+$('#tqBack').onclick=()=>{if(tqi>0){tqi--;renderTQ()}};
+$('#tqNext').onclick=()=>{if(TA[tqi]==null)return;if(tqi<TQ.length-1){tqi++;renderTQ()}else finishTest()};
+$('#tqExit').onclick=()=>{ST?go('s1'):show('t1');toast('Тест прерван — ответы не сохранились')};
+$('#tKnow').onclick=()=>{tKnow=true;RES=[];if(ST){renderRes();return show('t4')}$('#tRegTag').textContent='Без теста';$('#tRegH').textContent='Расскажи немного о себе';$('#fGo').textContent='Выбрать профессию';show('t3')};
+$('#tzGo').onclick=()=>{$('#tRegTag').textContent='Тест пройден';$('#tRegH').textContent='Зарегистрируйся, чтобы увидеть полный результат';$('#fGo').textContent='Показать полный результат';show('t3')};
+$$('#t3 input,#t3 select').forEach(el=>el.addEventListener('input',()=>$('#fErr').textContent=''));
+function readForm(p){const v=id=>$(p+id)?$(p+id).value.trim():'';const u={name:v('Name'),uni:v('Uni'),fac:v('Fac'),course:v('Course'),email:v('Email').toLowerCase()};if($(p+'Pass'))u.pass=$(p+'Pass').value;return u}
+function formErr(u,consent,isNew){return !u.name?'Напиши, как тебя зовут':!u.uni?'Выбери вуз':!u.fac?'Выбери факультет':!u.course?'Выбери курс':!/^\S+@\S+\.\S+$/.test(u.email)?'Укажи почту — это логин для входа':(isNew&&DB.accounts[u.email])?'Аккаунт с этой почтой уже есть — войди в него':(isNew&&(u.pass||'').length<6)?'Пароль — не короче 6 символов':!consent?'Нужно согласие на обработку персональных данных':''}
+$('#fGo').onclick=()=>{const u=readForm('#f');const err=formErr(u,$('#fConsent').checked,true);$('#fErr').textContent=err;if(err)return;DRAFT=u;renderRes();show('t4')};
+$('#tRetry').onclick=()=>startTest(false);
+$('#tAll').onclick=()=>{const keep=RES;tKnow=true;renderRes();RES=keep;
+  $$('#tRes .tcard').forEach(el=>{const k=$('[data-pick]',el).dataset.pick;const r=keep.find(x=>x.k===k);if(r&&!$('.match',el))$('.head',el).insertAdjacentHTML('beforeend',`<div class="match">${ring(r.p)}</div>`)})};
+
+/* ========================= СТРАНИЦА ПРОФЕССИИ (модальное окно) ========================= */
+let vT=null;
+function openProf(k){const c=C[k],p=ST?ST.res[k]:(RES.find(r=>r.k===k)||{}).p;
+  const mine=ST&&ST.courses[k];
+  $('#pmBody').innerHTML=`
+   <div class="pm-hero"><div><div class="tag y">Профессия</div><h1>${c.prof}</h1><p>${c.desc}</p></div>${p!=null?`<div class="match">${ring(p,96)}<b>совпадение</b></div>`:''}</div>
+   <div class="pm-video" id="pmVideo"><div class="pv-badge">Видео · чем занимается ${c.prof.toLowerCase()}</div><div class="play"><svg width="30" height="34" viewBox="0 0 30 34"><path d="M4 2 L28 17 L4 32 Z" fill="#1A1A1A"/></svg></div><div class="bar"><span id="pvCur">0:00</span><div class="ln"><i id="pvLn"></i></div><span>4:30</span></div></div>
+   <div class="pm-grid">
+    <div class="card"><h3>Чем занимается</h3><ul class="pm-list">${c.tasks.map(t=>`<li>${t}</li>`).join('')}</ul></div>
+    <div class="card"><h3>Навыки</h3><div class="skills">${c.skills.map(s=>`<span class="tag">${s}</span>`).join('')}</div><h3 style="margin-top:20px">Инструменты</h3><div class="skills">${c.tools.map(s=>`<span class="tag">${s}</span>`).join('')}</div></div>
+    <div class="card"><h3>Как начать</h3><ol class="pm-list">${c.steps.map(s=>`<li>${s[0]}</li>`).join('')}</ol><div class="m" style="margin-top:8px;color:var(--text2);font-size:14px">${c.steps.length} шагов · около ${c.weeks} недель</div></div>
+    <div class="card"><h3>Где применить в Т-Банке</h3><ul class="pm-list">${c.where.map(w=>`<li>${w}</li>`).join('')}</ul></div>
+   </div>
+   <div class="pm-cta">${ST?`<button class="btn y" id="pmStart">${mine?'Перейти к курсу':'Начать курс «'+c.name+'»'}</button>`:''}<button class="btn g" id="pmClose2">Закрыть</button></div>`;
+  $('#pmodal').classList.add('on');document.body.style.overflow='hidden';$('#pmodal').scrollTop=0;
+  clearInterval(vT);vT=null;
+  $('#pmVideo').onclick=()=>{const v=$('#pmVideo');if(vT){clearInterval(vT);vT=null;v.classList.remove('playing');return}v.classList.add('playing');let s=0;
+    vT=setInterval(()=>{s+=3;$('#pvCur').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');$('#pvLn').style.width=Math.min(100,s/270*100)+'%';if(s>=270){clearInterval(vT);vT=null;v.classList.remove('playing')}},50)};
+  if($('#pmStart'))$('#pmStart').onclick=()=>{closeProf();const isNew=enroll(k);ST.active=k;save();go('s2');if(isNew)toast(`Курс «${c.name}» добавлен в твоё обучение`)};
+  $('#pmClose2').onclick=closeProf;
+}
+function closeProf(){$('#pmodal').classList.remove('on');document.body.style.overflow='';clearInterval(vT);vT=null}
+$('#pmClose').onclick=closeProf;
+$('#pmodal').addEventListener('click',e=>{if(e.target.id==='pmodal')closeProf()});
+
+/* ========================= ГЛАВНАЯ ========================= */
+const QUOTES=['Маленький шаг каждый день — это и есть путь от A до B.','Не обязательно знать всё. Достаточно знать, какой шаг следующий.','Каждый эксперт когда-то был новичком, который не сдался.','Двадцать минут сегодня лучше, чем три часа «когда-нибудь».','Ошибка в коде — это не провал, а подсказка.'];
+let qI=new Date().getDate()%QUOTES.length;
+function renderHome(){
+  const a=ST.active,ks=myProfs().sort((x,y)=>(y===a)-(x===a));
+  $('#s1h').textContent=`Привет, ${ST.user.name}!`;
+  $('#s1sub').textContent=pct(a)===0?`Твой путь в профессию «${C[a].prof}» начинается здесь. Открой первый урок.`:pct(a)===100?`Курс «${C[a].name}» пройден. Пройди итоговый тест или выбери новую профессию.`:`Ты прошёл(ла) ${pct(a)}% курса «${C[a].name}». Сейчас — шаг ${curStep(a)+1}: ${C[a].steps[curStep(a)][0]}.`;
+  $('#myCourses').innerHTML=ks.map(k=>{const p=pct(k),f=p/100,s=curStep(k);return `<div class="card course" data-open="${k}">
+    <div class="ico" style="background:${C[k].bg}">${C[k].ico}</div>
+    <div class="cinfo"><div class="cname">${C[k].name}</div><div class="cmeta">${p===100?'Курс пройден':`Шаг ${s+1} из ${C[k].steps.length} · ${C[k].steps[s][0]}`}</div></div>
+    <div class="track"><span class="lbl" style="left:4px">A</span><span class="lbl" style="right:4px">B</span><div class="ln"></div><div class="fill" style="width:calc((100% - 20px)*${f})"></div><div class="pt a"></div><div class="pt b"></div><div class="me" style="left:calc(10px + (100% - 20px)*${f})"></div></div>
+    <div class="pct">${p}%</div>
+    <button class="btn ${k===a?'y':'g'}">${p===0?'Начать':p===100?'Открыть':'Продолжить'}</button></div>`}).join('')+`<div class="more" data-go="s4">+ Добавить курс из каталога</div>`;
+  $$('#myCourses [data-open]').forEach(el=>el.onclick=()=>{ST.active=el.dataset.open;save();go('s2')});
+  $('#motivText').textContent=QUOTES[qI];renderCal();
+}
+$('#motiv').onclick=()=>{qI=(qI+1)%QUOTES.length;$('#motivText').textContent=QUOTES[qI]};
+const MON=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'],MONG=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+const pd=x=>{const [y,m,d]=x.split('-').map(Number);return {y,m:m-1,d}};
+const forMe=e=>!e.p.length||e.p.some(k=>ST.courses[k]);
+let calM=10,selDay=null;
+const evRow=e=>{const p=pd(e.d);return `<div class="ev" data-id="${e.id}"><div class="date"><b>${p.d}</b><small>${MONG[p.m]}</small></div><div><div class="t">${e.t}</div><div class="m">${e.time} · ${e.fmt}${e.p.length?' · '+e.p.map(k=>C[k].prof).join(', '):''}</div></div></div>`};
+const bindEv=root=>$$('.ev[data-id]',root).forEach(el=>el.onclick=()=>openEvent(+el.dataset.id));
+function renderCal(){
+  const first=new Date(2026,calM,1),days=new Date(2026,calM+1,0).getDate(),off=(first.getDay()+6)%7;
+  $('#calMonth').textContent=MON[calM][0].toUpperCase()+MON[calM].slice(1)+' 2026';
+  const mine=EVENTS.filter(forMe);
+  let h=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(x=>`<div class="dw">${x}</div>`).join('')+'<div></div>'.repeat(off);
+  for(let d=1;d<=days;d++){const wd=(off+d-1)%7,has=mine.some(e=>{const p=pd(e.d);return p.m===calM&&p.d===d});
+    h+=`<div class="d${wd>4?' we':''}${has?' ev':''}${calM===10&&d===1?' today':''}${selDay===d?' sel':''}" data-d="${d}">${d}</div>`}
+  $('#calGrid').innerHTML=h;
+  $$('#calGrid .d').forEach(el=>el.onclick=()=>{selDay=selDay===+el.dataset.d?null:+el.dataset.d;renderCal()});
+  const list=mine.filter(e=>{const p=pd(e.d);return p.m===calM&&(selDay?p.d===selDay:true)}).slice(0,3);
+  $('#calEvs').innerHTML=list.length?list.map(evRow).join(''):`<div style="color:var(--text2);font-size:15px">${selDay?selDay+' '+MONG[calM]+': событий нет':'В этом месяце событий нет'}</div>`;bindEv($('#calEvs'));
+}
+$$('#s1 .cal-head .arr span').forEach((a,i)=>a.onclick=()=>{const n=calM+(i?1:-1);if(n<9||n>11)return toast('В прототипе есть октябрь–декабрь 2026');calM=n;selDay=null;renderCal()});
+
+/* ========================= АКТИВНОСТИ ========================= */
+let EF='mine';
+function renderEvents(){
+  const reg=new Set(ST.reg);
+  const list=EVENTS.filter(e=>EF==='all'||(EF==='mine'?forMe(e):EF==='reg'?reg.has(e.id):e.type===EF));
+  $('#evProfs').textContent=myProfs().map(k=>C[k].prof).join(', ');
+  $('#elist').innerHTML=list.map(e=>{const p=pd(e.d),past=e.d<'2026-11-01',on=reg.has(e.id),rel=e.p.some(k=>ST.courses[k]);
+    return `<div class="card eitem" id="ev${e.id}"><div class="date"><b>${p.d}</b><small>${MONG[p.m]}</small></div>
+    <div><div class="t">${e.t}</div><div class="m">${e.m}</div><div class="tags"><span class="tag">${e.type}</span><span class="tag">${e.time}</span><span class="tag">${e.fmt}</span>${e.p.length?e.p.map(k=>`<span class="tag${ST.courses[k]?' y':''}">${C[k].prof}</span>`).join(''):'<span class="tag">Для всех профессий</span>'}</div></div>
+    ${past?'<button class="btn g" disabled>Прошло</button>':`<button class="btn ${on?'ok':'y'}" data-reg="${e.id}">${on?'Ты записан(а) ✓':'Записаться'}</button>`}</div>`}).join('');
+  $('#eempty').style.display=list.length?'none':'block';
+  $$('#elist [data-reg]').forEach(b=>b.onclick=()=>{const id=+b.dataset.reg,e=EVENTS.find(x=>x.id===id);
+    if(ST.reg.includes(id)){ST.reg=ST.reg.filter(x=>x!==id);toast('Запись отменена')}else{ST.reg.push(id);toast('Готово! Напомним за день до начала')}save();renderEvents()});
+}
+$$('.chip[data-ef]').forEach(c=>c.onclick=()=>{EF=c.dataset.ef;$$('.chip[data-ef]').forEach(x=>x.classList.toggle('on',x===c));renderEvents()});
+function openEvent(id){go('s6');let el=$('#ev'+id);if(!el){EF='all';$$('.chip[data-ef]').forEach(x=>x.classList.toggle('on',x.dataset.ef==='all'));renderEvents();el=$('#ev'+id)}
+  if(el)setTimeout(()=>{el.scrollIntoView({block:'center',behavior:'smooth'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1600)},50)}
+const readiness=k=>Math.round((ST.res[k]||40)*0.3+(ST.courses[k]?pct(k):0)*0.7);
+let IF='mine';
+function renderInterns(){
+  $('#subTgl').classList.toggle('on',!!ST.sub);
+  const list=INTERNS.map((x,i)=>({...x,i,r:readiness(x.k)})).sort((a,b)=>(!!ST.courses[b.k])-(!!ST.courses[a.k])||b.r-a.r)
+    .filter(x=>IF==='all'||(IF==='mine'?ST.courses[x.k]:IF==='open'?x.open:x.r>=70&&x.open));
+  $('#ilist').innerHTML=list.length?list.map(x=>{const ready=x.r>=70&&x.open,mine=!!ST.courses[x.k],rem=ST.rem.includes(x.i);
+    const gap=ready?'Ты готов(а) подать заявку':mine?`Продолжай курс: следующий — шаг ${curStep(x.k)+1} «${C[x.k].steps[curStep(x.k)][0]}»`:`Пройди курс «${C[x.k].name}», чтобы подготовиться`;
+    return `<div class="card intern"><div><div class="t">${x.t}</div><div class="m">${x.m}</div><div class="tags"><span class="tag ${x.open?'y':''}">${x.open?'Набор открыт':'Набор скоро'}</span><a class="tag" data-prof="${x.k}" style="cursor:pointer">О профессии ${C[x.k].prof}</a></div></div>
+    <div class="ready"><div class="row"><span>Твоя готовность</span><b>${x.r}%</b></div><div class="bar"><i style="width:${x.r}%"></i></div><div class="gap">${gap}</div></div>
+    <div class="acts2">${ready?`<button class="btn y" data-apply="${x.i}">Подать заявку</button>`:`<button class="btn y" data-prep="${x.k}">${mine?'Продолжить курс':'Начать курс'}</button>`}
+    <button class="btn ${rem?'ok':'g'}" data-rem="${x.i}">${rem?'Напомню ✓':(x.open?'Напомнить о дедлайне':'Сообщить о наборе')}</button></div></div>`}).join(''):'<div class="empty" style="display:block">Здесь появятся стажировки по твоим профессиям. Выбери «Все», чтобы посмотреть остальные.</div>';
+  $$('#ilist [data-apply]').forEach(b=>b.onclick=()=>toast('Откроется форма заявки на сайте Т-Образования'));
+  $$('#ilist [data-prep]').forEach(b=>b.onclick=()=>{const k=b.dataset.prep;enroll(k);ST.active=k;save();go('s2')});
+  $$('#ilist [data-rem]').forEach(b=>b.onclick=()=>{const i=+b.dataset.rem;if(ST.rem.includes(i))ST.rem=ST.rem.filter(x=>x!==i);else ST.rem.push(i);save();toast(ST.rem.includes(i)?'Напоминание включено':'Напоминание отключено');renderInterns()});
+}
+$$('.chip[data-if]').forEach(c=>c.onclick=()=>{IF=c.dataset.if;$$('.chip[data-if]').forEach(x=>x.classList.toggle('on',x===c));renderInterns()});
+$('#subTgl').onclick=()=>{ST.sub=!ST.sub;save();renderInterns();toast(ST.sub?'Подборка стажировок включена':'Подборка стажировок выключена')};
+function renderOther(){
+  const list=[...OTHER].sort((a,b)=>(b.p.some(k=>ST.courses[k]))-(a.p.some(k=>ST.courses[k])));
+  $('#olist').innerHTML=list.map((o,i)=>{const rel=o.p.filter(k=>ST.courses[k]);const on=(ST.follow||[]).includes(o.t);return `<div class="card ocard">
+    <div class="row"><span class="tag ${rel.length?'y':''}">${rel.length?'Подходит для: '+rel.map(k=>C[k].prof).join(', '):o.tag}</span></div>
+    <div class="cname">${o.t}</div><div class="cdesc">${o.m}</div>
+    <div class="acts3"><button class="btn y" data-site="${o.t}">Подробнее</button><button class="btn ${on?'ok':'g'}" data-follow="${o.t}">${on?'Следим ✓':'Следить за набором'}</button></div></div>`}).join('');
+  $$('#olist [data-site]').forEach(b=>b.onclick=()=>toast(`«${b.dataset.site}» — подробности на сайте Т-Образования`));
+  $$('#olist [data-follow]').forEach(b=>b.onclick=()=>{ST.follow=ST.follow||[];const t=b.dataset.follow;if(ST.follow.includes(t))ST.follow=ST.follow.filter(x=>x!==t);else{ST.follow.push(t);toast('Сообщим, когда откроется набор')}save();renderOther()});
+}
+
+/* ========================= КУРС ========================= */
+const XS=[170,620,200,600,230,590,210,560];
+function radar(names,vals){
+  const R=110,ang=i=>-Math.PI/2+i*Math.PI/3,P=(r,i)=>[+(r*Math.cos(ang(i))).toFixed(1),+(r*Math.sin(ang(i))).toFixed(1)];
+  const poly=f=>names.map((_,i)=>P(R*f(i),i).join(',')).join(' ');
+  let s='<g transform="translate(200,152)" font-size="12" font-weight="600" fill="#6B717A">';
+  [1,.66,.33].forEach(t=>s+=`<polygon points="${poly(()=>t)}" fill="none" stroke="#E6E8EB"/>`);
+  names.forEach((_,i)=>{const [x,y]=P(R,i);s+=`<line x1="0" y1="0" x2="${x}" y2="${y}" stroke="#E6E8EB"/>`});
+  s+=`<polygon points="${poly(()=>.8)}" fill="none" stroke="#1A1A1A" stroke-width="1.5" stroke-dasharray="4 4"/><polygon points="${poly(i=>vals[i])}" fill="#FFDD2D" fill-opacity=".55" stroke="#E5C61A" stroke-width="2.5"/>`;
+  names.forEach((n,i)=>{const [x,y]=P(R+16,i);s+=`<text x="${x}" y="${y+4}" text-anchor="${Math.abs(x)<5?'middle':x>0?'start':'end'}">${n}</text>`});
+  return s+'</g>';
+}
+function renderCourse(){
+  const k=ST.active,c=C[k],N=c.steps.length,p=pct(k),cs=curStep(k),fu=firstUndone(k);
+  $('#cCrumb').textContent=c.name;$('#cTitle').textContent='Твой курс: '+c.name;
+  const sd=c.steps.filter((_,i)=>stepDone(k,i)).length;
+  $('#cSub').innerHTML=(p===0?'Курс только начался. Первый урок уже открыт. ':p===100?'Все шаги пройдены! Итоговый тест открыт. ':`${sd} ${pl(sd,'шаг пройден','шага пройдено','шагов пройдено')}. Сейчас — шаг ${cs+1} «${c.steps[cs][0]}». `)+`<a data-prof="${k}" class="ulink">О профессии ${c.prof}</a>`;
+  $('#pathH').textContent=`Путь из ${N} ${pl(N,'шага','шагов','шагов')}`;
+  $('#cCont').textContent=p===100?'Курс пройден ✓':p===0?'Начать первый урок':`Продолжить шаг ${cs+1}`;
+  const H=790,pts=c.steps.map((_,i)=>[XS[i%XS.length],Math.round(70+i*(H-130)/(N-1))]);
+  const seg=(a,b)=>`C ${a[0]} ${a[1]+70}, ${b[0]} ${b[1]-70}, ${b[0]} ${b[1]}`,path=n=>`M${pts[0][0]} ${pts[0][1]} `+pts.slice(1,n+1).map((b,i)=>seg(pts[i],b)).join(' ');
+  const dS=c.steps.map((_,i)=>stepDone(k,i)),lastDone=dS.lastIndexOf(true);
+  let svg=`<path d="${path(N-1)}" fill="none" stroke="#C9CDD2" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>`;
+  if(lastDone>=0)svg+=`<path d="${path(Math.min(lastDone+1,N-1))}" fill="none" stroke="#FFDD2D" stroke-width="5" stroke-dasharray="2 10" stroke-linecap="round"/>`;
+  c.steps.forEach((st,i)=>{const [x,y]=pts[i],right=x<400,isD=dS[i],isC=!isD&&i===cs,dl=lessons(k).filter(l=>l.si===i&&done(k).has(l.idx)).length,anchor=right?'start':'end',tx=right?(isC?80:74):(isC?-80:-74);
+    svg+=`<g class="node" data-step="${i}" transform="translate(${x},${y})"><rect x="-330" y="-36" width="680" height="72" fill="#fff" fill-opacity="0"/>`;
+    if(isD)svg+=`<ellipse cx="0" cy="8" rx="56" ry="20" fill="#E5C61A"/><ellipse cx="0" cy="0" rx="56" ry="20" fill="#FFDD2D"/><path d="M-9 0 l6 6 l12 -12" stroke="#1A1A1A" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    else if(isC)svg+=`<ellipse cx="0" cy="0" rx="78" ry="30" fill="#FFDD2D" opacity=".35"/><ellipse cx="0" cy="8" rx="58" ry="21" fill="#1A1A1A"/><ellipse cx="0" cy="0" rx="58" ry="21" fill="#fff" stroke="#1A1A1A" stroke-width="4"/><text x="0" y="7" font-size="20" fill="#1A1A1A" font-weight="800" text-anchor="middle">${i+1}</text><g transform="translate(-34,-66)"><rect width="68" height="26" rx="8" fill="#1A1A1A"/><text x="34" y="18" font-size="13" fill="#fff" font-weight="700" text-anchor="middle">Ты здесь</text><path d="M28 26 l6 7 l6 -7z" fill="#1A1A1A"/></g>`;
+    else svg+=`<ellipse cx="0" cy="8" rx="56" ry="20" fill="#C9CDD2"/><ellipse cx="0" cy="0" rx="56" ry="20" fill="#DDE0E4"/><text x="0" y="7" font-size="18" fill="#6B717A" font-weight="700" text-anchor="middle">${i+1}</text>`;
+    svg+=`<text x="${tx}" y="2" font-size="13" fill="#9299A2" font-weight="600" text-anchor="${anchor}">ШАГ ${i+1}${i===N-1?' · ФИНАЛ':''}${isC?` · ${dl} из 3 уроков`:''}${ST.place[k+':'+i]?' · ЗАЧТЁН ПО ТЕСТУ':''}</text><text x="${tx}" y="22" font-size="17" fill="${isD||isC?'#1A1A1A':'#6B717A'}" font-weight="${isD||isC?700:600}" text-anchor="${anchor}">${st[0]}</text></g>`});
+  $('#pathSvg').innerHTML=svg;
+  $('#pathList').innerHTML=c.steps.map((st,i)=>{const isD=dS[i],isC=!isD&&i===cs,dl=lessons(k).filter(l=>l.si===i&&done(k).has(l.idx)).length;
+    return `<div class="pli ${isD?'done':isC?'cur':'lock'}" data-step="${i}"><div class="dot">${isD?'✓':i+1}</div><div><div class="n">Шаг ${i+1}${i===N-1?' · финал':''}${isC?` · ${dl} из 3 уроков · ты здесь`:''}${ST.place[k+':'+i]?' · зачтён по тесту':''}</div><div class="t">${st[0]}</div></div></div>`}).join('');
+  $$('#pathSvg .node,#pathList .pli').forEach(n=>n.onclick=()=>{const i=+n.dataset.step,L=lessons(k).filter(l=>l.si===i);
+    if(fu>=0&&L[0].idx>fu)return toast(`Шаг ${i+1} откроется после шага ${i}. Знаешь тему? Пройди тест по текущему шагу`);
+    showLesson((L.find(l=>!done(k).has(l.idx))||L[0]).idx)});
+  const vals=c.skills.map((_,i)=>{const si=Math.min(N-1,Math.floor(i*N/6)),L=lessons(k).filter(l=>l.si===si),fr=L.filter(l=>done(k).has(l.idx)).length/L.length;return Math.min(1,(ST.res[k]?ST.res[k]/400:0.15)+0.75*fr)});
+  $('#radar').innerHTML=radar(c.skills,vals);
+  const ready=c.skills.filter((_,i)=>vals[i]>=0.8),weakI=vals.indexOf(Math.min(...vals));
+  $('#radarCap').textContent=ready.length===c.skills.length?'Все навыки на уровне стажёра — можно подавать заявку на стажировку.':ready.length?`${ready.join(', ')} — уже на уровне стажёра. Больше всего роста ждёт в навыке «${c.skills[weakI]}».`:`Пока все навыки ниже требований к стажёру — это нормально в начале пути. Начни с навыка «${c.skills[0]}».`;
+  const f=p/100;$('#perLessonTxt').textContent=`Каждый пройденный урок — +${perLesson(k)}% к курсу`;
+  $('#p2pct').textContent=p+'%';$('#p2fill').style.width=`calc((100% - 20px)*${f})`;$('#p2you').style.left=$('#p2dot').style.left=`calc(10px + (100% - 20px)*${f})`;
+  $('#p2meta').textContent=`${sd} из ${N} шагов · уроков пройдено: ${done(k).size} из ${total(k)}`;
+  // тест по теме
+  const fb=$('#finalBtn');
+  if(p===100){fb.disabled=false;fb.textContent=ST.final[k]!=null?`Пройти ещё раз (лучший: ${ST.final[k]} из ${finalQs(k).length})`:'Пройти итоговый тест';$('#finalLock').textContent='Курс пройден — тест открыт.'}
+  else{fb.disabled=true;fb.textContent='Откроется после всех шагов';$('#finalLock').textContent=`Осталось уроков: ${total(k)-done(k).size}.`}
+  const evs=EVENTS.filter(e=>e.d>='2026-11-01'&&e.p.includes(k)).concat(EVENTS.filter(e=>e.d>='2026-11-01'&&!e.p.length)).slice(0,3);
+  $('#cEvH').textContent=`Мероприятия: ${c.prof}`;$('#cEvents').innerHTML=evs.map(evRow).join('');bindEv($('#cEvents'));
+}
+$('#cCont').onclick=()=>{const fu=firstUndone(ST.active);if(fu<0)return toast('Все уроки пройдены — попробуй итоговый тест');showLesson(fu)};
+$('#finalBtn').onclick=()=>{if(!$('#finalBtn').disabled){QMODE='final';renderQuizScreen();go('s9')}};
+let PLACE_SI=0;
+$('#lPlaceBtn').onclick=()=>{PLACE_SI=lessons(ST.active)[cur].si;QMODE='place';renderQuizScreen();go('s9')};
+
+/* ========================= УРОК ========================= */
+let cur=0,stepI=0,seen=new Set();
+function lessonData(k,i){const l=lessons(k)[i],r=REAL[l.t],sname=C[k].steps[l.si][0];
+  const steps=r?r.steps:[['Зачем это нужно',`Разберёмся, какую задачу решает тема «${l.t}» и где она встречается в работе.`,'Текст шага готовит эксперт курса.'],['Как это устроено',`Ключевые идеи темы «${l.t}» на простом примере.`,'Здесь будут схема, пример и разбор типичных ошибок.'],['Практика','Короткое задание, чтобы закрепить материал.','Выполни его у себя и переходи к завершению урока.']];
+  return {l,d:r?r.d:`Тема «${l.t}» в шаге «${sname}». Три коротких шага: зачем это нужно, как устроено и практика.`,steps,quiz:r?r.quiz:genQuiz(k,i)}}
+function genQuiz(k,i){const L=lessons(k),l=L[i],oth=L.filter(x=>x.si!==l.si),sn=C[k].steps.map(s=>s[0]);
+  const o1=[sn[l.si],sn[(l.si+1)%sn.length],sn[(l.si+2)%sn.length]],r1=i%3;[o1[0],o1[r1]]=[o1[r1],o1[0]];
+  const o2=[l.t,oth[(i*2)%oth.length].t,oth[(i*2+5)%oth.length].t],r2=(i+1)%3;[o2[0],o2[r2]]=[o2[r2],o2[0]];
+  return [[`К какому шагу курса относится тема «${l.t}»?`,o1,r1],['Какая тема разбирается в этом уроке?',o2,r2],['Что нужно сделать, чтобы урок засчитался?',['Пройти все шаги урока','Ответить на тест без ошибок','Просто открыть урок'],0]]}
+function renderDefs(k,si){const N=C[k].steps.length,t=Math.min(5,Math.floor(si*6/N)),g=GLOSS[k];
+  $('#s3 .defs').innerHTML=[t,(t+1)%6,(t+5)%6].map(i=>`<div class="def"><b>${g[i][0]}</b><p>${g[i][1]}</p></div>`).join('');
+  $$('#s3 .def').forEach(d=>d.onclick=()=>toast('Определение сохранено в твой словарь'))}
+function showLesson(i){const k=ST.active,fu=firstUndone(k);if(fu>=0&&i>fu)return toast('Сначала пройди предыдущие уроки');
+  cur=i;stepI=0;seen=new Set();const D=lessonData(k,i);renderDefs(k,D.l.si);
+  $('#lcCourse').textContent=C[k].name;$('#lTitle').textContent='Тема: '+D.l.t;$('#lcStep').textContent='Шаг '+(D.l.si+1);$('#lcLesson').textContent='Урок '+(D.l.li+1);
+  $('#lBadge').textContent=`Шаг ${D.l.si+1} · урок ${D.l.li+1} из 3`;$('#lTag').textContent='≈ 10 мин';$('#lPer').textContent=`+${perLesson(k)}% к курсу`;
+  $('#lDesc').textContent=D.d;$('#lChecks').innerHTML=D.steps.map(s=>`<div><i>✓</i>${s[0]}</div>`).join('');
+  const sd=stepDone(k,D.l.si),sn=C[k].steps[D.l.si][0];$('#lPlace').style.display=sd?'none':'block';
+  $('#lPlaceTxt').textContent=`Уже знаешь тему «${sn}»? Пройди короткий тест: от 4 из 5 правильных ответов шаг ${D.l.si+1} засчитается целиком, и ты сразу перейдёшь к следующей теме.`;
+  $('#lPlaceBtn').textContent=`Тест по шагу ${D.l.si+1}`;
+  renderStep();renderReward();renderQuiz();$('#prev').disabled=i===0;$('#next').textContent=i===total(k)-1?'К пути курса →':'Следующее →';go('s3')}
+function renderStep(){const st=lessonData(ST.active,cur).steps,n=st.length,isD=done(ST.active).has(cur);seen.add(stepI);
+  $('#pills').innerHTML=st.map((_,j)=>`<div class="pill ${j===stepI?'on':(seen.has(j)||isD?'seen':'')}" data-k="${j}">${j+1}</div>`).join('');
+  $$('#pills .pill').forEach(p=>p.onclick=()=>{stepI=+p.dataset.k;renderStep()});
+  $('#stNo').textContent=`Шаг ${stepI+1} из ${n}`;$('#stTitle').textContent=st[stepI][0];$('#stText').innerHTML=st[stepI].slice(1).map(x=>`<p>${x}</p>`).join('');
+  $('#stPrev').disabled=stepI===0;$('#stNext').textContent=stepI<n-1?'Далее':(isD?'Урок пройден ✓':'Завершить урок');$('#stNext').className='btn '+(stepI===n-1&&isD?'ok':'y');$('#next').disabled=!isD}
+function renderReward(){const k=ST.active,isD=done(k).has(cur);$('#lReward').classList.toggle('done',isD);
+  $('#lReward').innerHTML=isD?`<b>+${perLesson(k)}%</b><span>урок пройден · курс пройден на ${pct(k)}%</span>`:`<b>+${perLesson(k)}%</b><span>к прохождению курса — пройди все шаги урока</span>`}
+function bindOpts(root){$$(root+' .opt').forEach(o=>o.onclick=()=>{if($(root).classList.contains('checked'))return;$$(`${root} .opt[data-q="${o.dataset.q}"]`).forEach(x=>x.classList.remove('sel'));o.classList.add('sel')})}
+const qHTML=qs=>qs.map((q,qi)=>`<div class="q"><b>${qi+1}. ${q[0]}</b>${q[1].map((o,oi)=>`<div class="opt" data-q="${qi}" data-o="${oi}"><i></i>${o}</div>`).join('')}</div>`).join('');
+function checkQuiz(root,qs){let ok=0;qs.forEach((q,qi)=>{const sel=$(`${root} .opt.sel[data-q="${qi}"]`);$$(`${root} .opt[data-q="${qi}"]`).forEach(x=>{if(+x.dataset.o===q[2])x.classList.add('right')});if(sel){if(+sel.dataset.o===q[2])ok++;else sel.classList.add('wrong')}});$(root).classList.add('checked');return ok}
+function renderQuiz(){$('#quiz').classList.remove('skipped');$('#qRes').textContent='';$('#qSkip').textContent='Пропустить';$('#qBody').classList.remove('checked');$('#qBody').innerHTML=qHTML(lessonData(ST.active,cur).quiz);bindOpts('#qBody')}
+$('#qCheck').onclick=()=>{const qs=lessonData(ST.active,cur).quiz;if($('#qBody').classList.contains('checked'))return;if($$('#qBody .opt.sel').length<qs.length)return toast('Ответь на все вопросы — или пропусти тест');const ok=checkQuiz('#qBody',qs);$('#qRes').textContent=`Верно ${ok} из ${qs.length}`;toast(ok===qs.length?'Отлично, всё верно!':'Правильные ответы подсвечены зелёным')};
+$('#qSkip').onclick=()=>{const q=$('#quiz');if(q.classList.contains('skipped'))renderQuiz();else{q.classList.add('skipped');$('#qSkip').textContent='Всё-таки пройти тест';$('#qRes').textContent='Тест пропущен'}};
+$('#stPrev').onclick=()=>{if(stepI>0){stepI--;renderStep()}};
+$('#stNext').onclick=()=>{const k=ST.active,n=lessonData(k,cur).steps.length;if(stepI<n-1){stepI++;return renderStep()}
+  if(done(k).has(cur))return toast('Урок уже пройден');const si=lessons(k)[cur].si;ST.courses[k].push(cur);save();renderStep();renderReward();afterProgress(k,si);
+  setTimeout(()=>$('#quiz').scrollIntoView({behavior:'smooth',block:'center'}),400)};
+function afterProgress(k,si){const p=pct(k);
+  if(p===100){toast('Курс пройден! Итоговый тест открыт');notify(`Курс «${C[k].name}» пройден — итоговый тест открыт`,'s2')}
+  else if(stepDone(k,si)){toast(`Шаг ${si+1} пройден! Курс пройден на ${p}%`);notify(`Шаг ${si+1} «${C[k].steps[si][0]}» пройден`,'s2')}
+  else toast(`Урок пройден! +${perLesson(k)}% — курс пройден на ${p}%`);
+  const it=INTERNS.findIndex(x=>x.k===k);if(it>=0&&readiness(k)>=70&&!ST['rdy'+k]){ST['rdy'+k]=1;notify(`Готовность к стажировке «${INTERNS[it].t}» — ${readiness(k)}%. Можно подавать заявку`,'s7')}save()}
+$('#prev').onclick=()=>cur>0&&showLesson(cur-1);
+$('#next').onclick=()=>{if($('#next').disabled)return;cur<total(ST.active)-1?showLesson(cur+1):go('s2')};
+
+/* ========================= ТЕСТ ПО ТЕМЕ И ИТОГОВЫЙ ТЕСТ ========================= */
+let QMODE='final';
+function finalQs(k){const L=lessons(k);return C[k].steps.map((st,si)=>{const own=L.filter(l=>l.si===si),oth=L.filter(l=>l.si!==si);
+  const o=[own[si%3].t,oth[(si*4)%oth.length].t,oth[(si*4+7)%oth.length].t],r=si%3;[o[0],o[r]]=[o[r],o[0]];return [`Какая тема входит в шаг «${st[0]}»?`,o,r,si]})}
+function placeQs(k){const si=PLACE_SI,N=C[k].steps.length,L=lessons(k),own=L.filter(l=>l.si===si),oth=L.filter(l=>l.si!==si),g=GLOSS[k],t=Math.min(5,Math.floor(si*6/N));
+  const qs=own.map((l,j)=>{const o=[l.t,oth[(j*3+si)%oth.length].t,oth[(j*3+si+4)%oth.length].t],r=(j+si)%3;[o[0],o[r]]=[o[r],o[0]];return [`Что из этого входит в тему «${C[k].steps[si][0]}»?`,o,r,si]});
+  [t,(t+1)%6].forEach((gi,j)=>{const o=[g[gi][1],g[(gi+2)%6][1],g[(gi+4)%6][1]],r=(j+1)%3;[o[0],o[r]]=[o[r],o[0]];qs.push([`Что означает «${g[gi][0]}»?`,o,r,si])});
+  return qs}
+const curQs=()=>QMODE==='final'?finalQs(ST.active):placeQs(ST.active);
+function renderQuizScreen(){const k=ST.active,qs=curQs(),si=PLACE_SI;
+  $('#fCrumb').textContent=C[k].name;
+  $('#fTitle').textContent=QMODE==='final'?`Итоговый тест по курсу «${C[k].name}»`:`Тест по теме «${C[k].steps[si][0]}»`;
+  $('#fCount').textContent=`${qs.length} ${pl(qs.length,'вопрос','вопроса','вопросов')}`;$('#fTag').textContent=QMODE==='final'?'По желанию':'Перейти дальше';
+  $('#fHow').innerHTML=QMODE==='final'?'<h3>Как это работает</h3><p>Тест открывается после всех шагов курса. Он помогает понять, что ты уже уверенно знаешь, а какие темы стоит повторить перед отбором на стажировку.</p><div class="checks"><div><i>✓</i>Можно пройти сколько угодно раз</div><div><i>✓</i>На прогресс курса не влияет</div><div><i>✓</i>Покажем шаги, которые стоит повторить</div></div>'
+   :`<h3>Тест для тех, кто уже знает тему</h3><p>Если у тебя средний или высокий уровень по теме, не обязательно проходить все уроки. Ответь правильно на 4 из 5 вопросов — шаг ${si+1} засчитается целиком, и откроется следующая тема.</p><div class="checks"><div><i>✓</i>Можно пересдать</div><div><i>✓</i>Не прошёл — просто продолжай уроки</div><div><i>✓</i>Зачтённые уроки дают процент к курсу</div></div>`;
+  $('#fBody').innerHTML=qHTML(qs);$('#fBody').classList.remove('checked');$('#fResult').style.display='none';$('#fCheck').textContent='Узнать результат';bindOpts('#fBody')}
+$('#fCheck').onclick=()=>{const k=ST.active,qs=curQs();
+  if($('#fBody').classList.contains('checked')){renderQuizScreen();window.scrollTo(0,0);return}
+  if($$('#fBody .opt.sel').length<qs.length)return toast(`Ответь на все ${qs.length} ${pl(qs.length,'вопрос','вопроса','вопросов')}`);
+  const ok=checkQuiz('#fBody',qs);let html;
+  if(QMODE==='place'){const si=qs[0][3],pass=ok>=4;
+    if(pass){lessons(k).filter(l=>l.si===si).forEach(l=>{if(!done(k).has(l.idx))ST.courses[k].push(l.idx)});ST.place[k+':'+si]=1;save();afterProgress(k,si)}
+    html=`<h3>Результат</h3><div class="fres-big">${ok} из ${qs.length}</div><div class="sub" style="font-size:15px">${pass?`Шаг ${si+1} засчитан! Курс пройден на ${pct(k)}%.`:'Пока не хватило до 4 из 5. Пройди уроки шага — и попробуй снова.'}</div>
+     <button class="btn y" style="margin-top:16px;width:100%" id="placeNext">${pass?(si<C[k].steps.length-1?'К следующей теме':'К пути курса'):'Вернуться к урокам'}</button>`;
+    $('#fCheck').textContent='Пройти ещё раз';if(pass)$('#fCheck').style.display='none'}
+  else{ST.final[k]=Math.max(ST.final[k]||0,ok);save();const weak=[...new Set(qs.filter((q,qi)=>+$(`#fBody .opt.sel[data-q="${qi}"]`).dataset.o!==q[2]).map(q=>q[3]))];
+    html=`<h3>Результат</h3><div class="fres-big">${ok} из ${qs.length}</div><div class="sub" style="font-size:15px">${ok===qs.length?'Отличный результат — можно смотреть стажировки.':'Повтори шаги ниже — и попробуй ещё раз.'}</div>
+     ${weak.map(si=>`<div class="fres-row"><span>Шаг ${si+1}. ${C[k].steps[si][0]}</span><a class="chip" data-rep="${si}" style="height:32px;font-size:14px;background:var(--bg)">Повторить</a></div>`).join('')}
+     ${ok===qs.length?'<button class="btn y" style="margin-top:16px;width:100%" data-go="s7">К стажировкам</button>':''}`;$('#fCheck').textContent='Пройти ещё раз'}
+  $('#fResult').style.display='block';$('#fResult').innerHTML=html;
+  if($('#placeNext'))$('#placeNext').onclick=()=>{const si=qs[0][3],L=lessons(k);
+    if(stepDone(k,si)){const nx=L.find(l=>l.si===si+1);nx?showLesson(nx.idx):go('s2')}
+    else{const back=L.find(l=>l.si===si&&!done(k).has(l.idx))||L.find(l=>l.si===si);showLesson(back.idx)}};
+  $$('#fResult [data-rep]').forEach(a=>a.onclick=()=>showLesson(lessons(k).find(l=>l.si===+a.dataset.rep).idx));
+  $('#fResult').scrollIntoView({behavior:'smooth',block:'center'})};
+const _rqs=renderQuizScreen;renderQuizScreen=function(){$('#fCheck').style.display='';_rqs()};
+
+/* ========================= КАТАЛОГ ========================= */
+let F='all';
+function renderCat(){const q=$('#q').value.trim().toLowerCase();
+  const list=KEYS.filter(k=>(F==='all'||(F==='mine'?ST.courses[k]:C[k].f===F))&&(!q||(C[k].name+' '+C[k].d+' '+C[k].prof).toLowerCase().includes(q)));
+  $('#cgrid').innerHTML=list.map(k=>{const c=C[k],mine=!!ST.courses[k];return `<div class="card ccard" data-k="${k}">
+    <div class="row"><div class="ico" style="background:${c.bg}">${c.ico}</div>${mine?`<span class="tag y">Ты проходишь · ${pct(k)}%</span>`:(ST.res[k]?`<span class="tag">Совпадение ${ST.res[k]}%</span>`:'')}</div>
+    <div class="cname">${c.name}</div><div class="cdesc">${c.d}</div>
+    <div class="meta"><span class="tag">${c.lvl}</span><span class="tag">${c.steps.length} шагов · ${c.weeks} недель</span><span class="tag">Бесплатно</span></div>
+    <button class="btn ${mine?'g':'y'}">${mine?'Перейти к курсу':'Записаться'}</button></div>`}).join('');
+  $('#empty').style.display=list.length?'none':'block';
+  $$('#cgrid .ccard').forEach(el=>el.onclick=()=>{const k=el.dataset.k;if(ST.courses[k]){ST.active=k;save();return go('s2')}enroll(k);ST.active=k;save();toast(`Ты записан(а) на курс «${C[k].name}»`);go('s2')})}
+$('#q').oninput=renderCat;
+$$('.chip[data-f]').forEach(ch=>ch.onclick=()=>{F=ch.dataset.f;$$('.chip[data-f]').forEach(x=>x.classList.toggle('on',x===ch));renderCat()});
+
+/* ========================= АТЛАС ========================= */
+function renderAtlas(){const has=Object.keys(ST.res).length>0;
+  $('#aSub').textContent=has?'Профессии, на которые готовит Т-Образование. Совпадение посчитано по твоему тесту — открой профессию, чтобы узнать подробнее и посмотреть видео.':'Профессии, на которые готовит Т-Образование. Пройди тест, чтобы увидеть совпадение.';
+  $('#aTag').textContent=has?'Тест пройден':'Тест не пройден';
+  const ks=[...KEYS].sort((a,b)=>(ST.res[b]||0)-(ST.res[a]||0));
+  $('#agrid').innerHTML=ks.map(k=>`<div class="card prof" data-prof="${k}">
+    <div><div class="cname" style="font-size:20px">${C[k].prof}${ST.courses[k]?' <span class="tag y" style="vertical-align:3px">Учишься</span>':''}</div><div class="cdesc">${C[k].desc}</div><div class="skills">${C[k].skills.slice(0,4).map(x=>`<span class="tag">${x}</span>`).join('')}</div><div class="amore">Подробнее и видео →</div></div>
+    <div class="match">${ST.res[k]!=null?ring(ST.res[k])+'<b>совпадение</b>':''}</div></div>`).join('')}
+$('#retest').onclick=()=>{toast('Пройди тест — профиль и курсы сохранятся, обновятся только результаты');startTest(false)};
+
+/* ========================= ПРОФИЛЬ ========================= */
+function renderProfile(){const u=ST.user;
+  $('#pAva').textContent=u.name[0].toUpperCase();$('#pName').textContent=u.name;$('#pUni').innerHTML=`${u.uni} · ${u.fac}<br>${u.course} курс${u.email?'<br>'+u.email:''}`;
+  $('#profProg').innerHTML=myProfs().map(k=>`<div class="ppr"><div class="row"><b style="font-size:15px">${C[k].name}</b><span>${pct(k)}%</span></div><div class="bar"><i style="width:${pct(k)}%"></i></div></div>`).join('');
+  const any=f=>myProfs().some(f);
+  const ACH=[['🧭','Первый компас','Тест пройден',Object.keys(ST.res).length>0],['📍','На карте','Профиль создан',true],['🗺️','Курс проложен','Профессия выбрана',true],['✉️','На связи','Включи письма',!!ST.mail],
+    ['✏️','Первый урок','Пройди урок',any(k=>ST.courses[k].length>0)],['🪜','Шаг за шагом','Пройди шаг курса',any(k=>C[k].steps.some((_,i)=>stepDone(k,i)))],['⚡','Экстерн','Сдай тест по теме',Object.keys(ST.place).length>0],
+    ['🏁','Финишер','Пройди курс',any(k=>pct(k)===100)],['🎓','Отличник','Итоговый тест без ошибок',Object.keys(ST.final).some(k=>ST.final[k]===finalQs(k).length)],['🔭','Исследователь','Запишись на 2 курса',myProfs().length>=2]];
+  $('#achs').innerHTML=ACH.map(x=>`<div class="ach${x[3]?'':' lock'}"><div class="ai">${x[0]}</div><b>${x[1]}</b><small>${x[2]}</small></div>`).join('');
+  $('#achCount').textContent=ACH.filter(x=>x[3]).length+' из '+ACH.length+' получено';
+  $$('#achs .ach').forEach((el,i)=>el.onclick=()=>toast(ACH[i][3]?'«'+ACH[i][1]+'» получена':'Как получить: '+ACH[i][2].toLowerCase()));
+  $('#tglLk').classList.toggle('on',!!ST.lk);$('#tglMail').classList.toggle('on',!!ST.mail);$('#freq').value=ST.freq;$('#freqRow').style.display=ST.mail?'flex':'none';
+  $('#mailHint').textContent=u.email?`Письма приходят на ${u.email}`:'Почта не указана — добавь её в редактировании профиля';
+  $('#lastTest').textContent=ST.testAt?'Тест пройден '+new Date(ST.testAt).toLocaleDateString('ru-RU'):'Тест не пройден';
+}
+$('#tglLk').onclick=()=>{ST.lk=!ST.lk;save();renderProfile();renderBell();toast(ST.lk?'Уведомления в личном кабинете включены':'Уведомления в личном кабинете выключены')};
+$('#tglMail').onclick=()=>{if(!ST.mail&&!ST.user.email){toast('Сначала добавь почту в профиле');return openEdit()}ST.mail=!ST.mail;save();renderProfile();renderBell();toast(ST.mail?'Уведомления по почте включены':'Уведомления по почте выключены')};
+$('#freq').onchange=e=>{ST.freq=e.target.value;save();toast('Частота писем: '+e.target.value.toLowerCase())};
+$('#delData').onclick=()=>toast('Запрос на удаление данных отправлен');
+$('#retestP').onclick=()=>{toast('Профиль и курсы сохранятся — обновятся только результаты теста');startTest(false)};
+function openEdit(){const u=ST.user;['Name','Uni','Fac','Course','Email'].forEach(f=>$('#e'+f).value=u[f.toLowerCase()]||'');$('#eConsent').checked=true;$('#eErr').textContent='';$('#editModal').classList.add('on')}
+$('#editP').onclick=openEdit;
+$('#eCancel').onclick=()=>$('#editModal').classList.remove('on');
+$('#editModal').addEventListener('click',e=>{if(e.target.id==='editModal')$('#editModal').classList.remove('on')});
+$('#eSave').onclick=()=>{const u=readForm('#e');const old=ST.user.email;let err=formErr(u,$('#eConsent').checked,false);if(!err&&u.email!==old&&DB.accounts[u.email])err='Эта почта уже занята другим аккаунтом';$('#eErr').textContent=err;if(err)return;
+  if(u.email!==old){DB.accounts[u.email]=DB.accounts[old];delete DB.accounts[old];DB.cur=u.email}ST.user=u;save();$('#editModal').classList.remove('on');renderProfile();renderBell();go('s8');toast('Профиль обновлён')};
+
+/* ========================= АККАУНТ ========================= */
+function renderAcct(){
+  $$('.acct-slot').forEach(el=>el.innerHTML=ST?`<button class="btn g sm" data-go="s1">Мой кабинет</button><div class="ava">${ST.user.name[0].toUpperCase()}</div>`:`<button class="btn y sm loginBtn">Войти</button>`);
+  $$('.welcome').forEach(el=>{el.style.display=ST?'flex':'none';if(ST)$('.wtxt',el).textContent=`С возвращением, ${ST.user.name}! Продолжай обучение или пройди тест ещё раз — курсы и прогресс сохранятся.`});
+  if(ST){$('#amName').textContent=ST.user.name;$('#amMail').textContent=ST.user.email}
+}
+function toggleAcct(){$('#notifPanel').classList.remove('on');$('#acctMenu').classList.toggle('on')}
+function goHome(){show('t1')}
+function openAuth(tab){$('#authModal').classList.add('on');authTab(tab||'in');$('#aErr').textContent=''}
+function authTab(t){$$('#authModal .atab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));$('#aIn').style.display=t==='in'?'block':'none';$('#aUp').style.display=t==='up'?'block':'none'}
+$$('#authModal .atab').forEach(x=>x.onclick=()=>authTab(x.dataset.t));
+$('#authModal').addEventListener('click',e=>{if(e.target.id==='authModal')$('#authModal').classList.remove('on')});
+$('#aClose').onclick=()=>$('#authModal').classList.remove('on');
+$('#aLogin').onclick=()=>{loadDB();const em=$('#aEmail').value.trim().toLowerCase(),pw=$('#aPass').value,a=DB.accounts[em];
+  if(!a){$('#aErr').textContent='Аккаунт с такой почтой не найден. Пройди тест и зарегистрируйся';return}
+  if(a.pass!==hashPw(pw)){$('#aErr').textContent='Неверный пароль';return}
+  DB.cur=em;saveDB();ST=a.state;$('#authModal').classList.remove('on');$('#aPass').value='';go('s1');renderBell();toast(`С возвращением, ${ST.user.name}!`)};
+$('#aPass').addEventListener('keydown',e=>{if(e.key==='Enter')$('#aLogin').click()});
+$('#aTest').onclick=()=>{$('#authModal').classList.remove('on');startTest(false)};
+$('#aNoTest').onclick=()=>{$('#authModal').classList.remove('on');$('#tKnow').click()};
+function logout(){save();DB.cur=null;saveDB();ST=null;closePanels();renderBell();show('t1');toast('Ты вышел(ла) из аккаунта')}
+$('#amOut').onclick=logout;$('#logoutP').onclick=logout;
+$('#amCab').onclick=()=>go('s1');$('#amProf').onclick=()=>go('s8');
+
+/* ========================= СТАРТ ========================= */
+$$('#s3 .r').forEach((r,i)=>r.onclick=()=>toast(['Конспект скачивается (PDF)','Откроется подборка материалов Т-Образования','Откроется подборка открытых курсов и статей'][i]));
+ST=load();
+show('t1');
+renderBell();
+
+</script></body></html>
